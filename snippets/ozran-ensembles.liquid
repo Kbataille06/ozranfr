@@ -1,0 +1,241 @@
+{% comment %} OZRAN - Association des ensembles (brouillon uniquement) {% endcomment %}
+{% liquid
+  assign top_handle = ''
+  assign bottom_handle = ''
+  assign is_eclipse = false
+  assign is_women = false
+  assign alternative_bottom_handle = ''
+  case product.handle
+    when 'ensemble-oversize-unisexe-ozran-nexus', 'jogging-homme-ozran-nexus'
+      assign top_handle = 'ensemble-oversize-unisexe-ozran-nexus'
+      assign bottom_handle = 'jogging-homme-ozran-nexus'
+    when 'sweat-femme-ozran-nexus', 'jogging-femme-ozran-nexus'
+      assign is_women = true
+      assign top_handle = 'sweat-femme-ozran-nexus'
+      assign bottom_handle = 'jogging-femme-ozran-nexus'
+    when 'sweat-a-capuche-ample-ozran-signature-noir', 'womens-casual-wear-example-product-3'
+      assign top_handle = 'sweat-a-capuche-ample-ozran-signature-noir'
+      assign bottom_handle = 'womens-casual-wear-example-product-3'
+    when 'sweat-zippe-a-capuche-femme-ozran-signature', 'jogging-oversize-femme-simple-ozran-noir'
+      assign is_women = true
+      assign top_handle = 'sweat-zippe-a-capuche-femme-ozran-signature'
+      assign bottom_handle = 'jogging-oversize-femme-simple-ozran-noir'
+    when 'womens-casual-wear-example-product-4', 'womens-casual-wear-example-product-2', 'short-femme-alba'
+      assign is_women = true
+      assign alternative_bottom_handle = 'short-femme-alba'
+      assign top_handle = 'womens-casual-wear-example-product-4'
+      assign bottom_handle = 'womens-casual-wear-example-product-2'
+    when 'ensemble-oversize-homme-ozran-eclipse-edition-limitee'
+      assign is_eclipse = true
+  endcase
+  assign upper = all_products[top_handle]
+  assign lower = all_products[bottom_handle]
+  if product.handle == 'short-femme-alba'
+    assign lower = product
+  endif
+  assign alternative_lower = all_products[alternative_bottom_handle]
+  if product.id != upper.id
+    assign alternative_lower = blank
+  endif
+%}
+{% if is_eclipse == false and upper != blank and lower != blank %}
+<style>
+.oz-pair{width:100%;max-width:960px;margin:36px auto;color:var(--color-foreground)}.oz-pair__inner{padding:28px 0;border-top:1px solid color-mix(in srgb,currentColor 18%,transparent)}.oz-pair__heading{font:inherit;font-family:var(--font-heading--family);font-size:clamp(23px,3vw,32px);font-weight:500;line-height:1.2;margin:0 0 24px}.oz-pair__grid{display:block}.oz-pair__item{display:grid;grid-template-columns:minmax(0,42%) minmax(0,1fr);gap:28px;align-items:start}.oz-pair__item[hidden],.oz-pair__frame[hidden]{display:none!important}.oz-pair__details{min-width:0}.oz-pair__gallery{min-width:0;background:var(--color-background)}.oz-pair__track{display:flex;aspect-ratio:4/5;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;touch-action:pan-x pan-y pinch-zoom}.oz-pair__track::-webkit-scrollbar{display:none}.oz-pair__frame{flex:0 0 100%;min-width:0;scroll-snap-align:start}.oz-pair__image{display:block;width:100%;height:100%;object-fit:cover}.oz-pair__name{font-size:18px;line-height:1.35;margin:0 0 10px}.oz-pair__price{font-size:14px;margin-bottom:24px}.oz-pair__label{font-size:11px;letter-spacing:.08em;margin:18px 0 10px}.oz-pair__sizes,.oz-pair__colors{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}.oz-pair__sizechoice,.oz-pair__swatch,.oz-pair__bottom-choice{position:relative;cursor:pointer}.oz-pair input[type=radio]{position:absolute;opacity:0;width:1px;height:1px}.oz-pair__sizechoice span,.oz-pair__bottom-choice span{display:flex;min-width:44px;min-height:44px;align-items:center;justify-content:center;padding:8px;border:1px solid color-mix(in srgb,currentColor 30%,transparent);font-size:12px}.oz-pair input:checked+span{border-color:currentColor;box-shadow:inset 0 0 0 1px currentColor}.oz-pair input:focus-visible+span{outline:2px solid currentColor;outline-offset:3px}.oz-pair__swatch{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:44px}.oz-pair__swatch-circle{display:block;width:26px;height:26px;border-radius:50%;background:var(--oz-swatch);border:1px solid #aaa}.oz-pair__swatch-label{font-size:10px}.oz-pair__note,.oz-pair__availability,.oz-pair__status{font-size:12px;line-height:1.5}.oz-pair__note{color:inherit;text-underline-offset:4px}.oz-pair__footer{display:flex;justify-content:flex-end;margin-top:24px}.oz-pair__action{min-height:48px;padding:14px 24px;background:var(--color-foreground);color:var(--color-background);border:1px solid var(--color-foreground);font:inherit;font-size:12px;cursor:pointer}.oz-pair__action:disabled{opacity:.45;cursor:not-allowed}.oz-pair__action:focus-visible{outline:2px solid currentColor;outline-offset:4px}.oz-pair__action-main{display:flex;align-items:center;justify-content:space-between;gap:24px}.oz-pair__bottom-switch{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}.oz-pair__bottom-switch>.oz-pair__label{width:100%}.oz-pair__sizegrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.oz-pair select:not([hidden]){width:100%;min-height:44px}.oz-pair__total{font-size:18px}.oz-pair__lead{font-size:13px;line-height:1.6}@media(max-width:749px){.oz-pair{margin:28px 0}.oz-pair__inner{padding:24px 0}.oz-pair__heading{font-size:23px;margin-bottom:20px}.oz-pair__item{grid-template-columns:minmax(0,40%) minmax(0,1fr);gap:16px}.oz-pair__name{font-size:15px}.oz-pair__price{margin-bottom:16px}.oz-pair__sizes{gap:5px}.oz-pair__footer{margin-top:20px}.oz-pair__action{width:100%}}
+</style>
+<section class="oz-pair" aria-label="Composer son ensemble OZRAN">
+ <div class="oz-pair__inner">
+  {% if is_eclipse %}
+   <h2 class="oz-pair__heading">Éclipse, votre coupe.</h2>
+   <p class="oz-pair__lead">Un ensemble, deux tailles indépendantes. Composez une silhouette qui vous ressemble.</p>
+   <div class="oz-pair__eclipse" data-oz-eclipse data-variant="{{ product.selected_or_first_available_variant.id }}">
+    <div class="oz-pair__sizegrid">
+     <div><label class="oz-pair__label" for="oz-eclipse-top">Taille du haut</label><select id="oz-eclipse-top" data-size-top><option value="">Choisir</option>{% for size in (1..6) %}{% assign size_label = '' %}{% case size %}{% when 1 %}{% assign size_label = 'XS' %}{% when 2 %}{% assign size_label = 'S' %}{% when 3 %}{% assign size_label = 'M' %}{% when 4 %}{% assign size_label = 'L' %}{% when 5 %}{% assign size_label = 'XL' %}{% when 6 %}{% assign size_label = 'XXL' %}{% endcase %}<option value="{{ size_label }}">{{ size_label }}</option>{% endfor %}</select></div>
+     <div><label class="oz-pair__label" for="oz-eclipse-bottom">Taille du bas</label><select id="oz-eclipse-bottom" data-size-bottom><option value="">Choisir</option>{% for size in (1..6) %}{% assign size_label = '' %}{% case size %}{% when 1 %}{% assign size_label = 'XS' %}{% when 2 %}{% assign size_label = 'S' %}{% when 3 %}{% assign size_label = 'M' %}{% when 4 %}{% assign size_label = 'L' %}{% when 5 %}{% assign size_label = 'XL' %}{% when 6 %}{% assign size_label = 'XXL' %}{% endcase %}<option value="{{ size_label }}">{{ size_label }}</option>{% endfor %}</select></div>
+    </div>
+    <p class="oz-pair__note" style="margin-top:13px"><a style="text-underline-offset:4px" href="mailto:ozrancontacts@gmail.com?subject=OZRAN%20-%20Taille%20sur%20devis">Taille inférieure à XS ou supérieure à XXL ? Demander un devis</a></p><div class="oz-pair__footer"><div class="oz-pair__total">{{ product.selected_or_first_available_variant.price | money }}</div><button class="oz-pair__action" type="button" data-add disabled>Ajouter l'ensemble</button></div>
+    <p class="oz-pair__note">Les tailles sont enregistrées avec la commande. Leur disponibilité et leur fabrication doivent être confirmées avant l'ouverture des ventes.</p>
+    <p class="oz-pair__status" data-status role="status" aria-live="polite"></p>
+   </div>
+  {% else %}
+   <h2 class="oz-pair__heading">Pensés pour aller ensemble.</h2>
+   {% if alternative_lower != blank %}
+    <div class="oz-pair__bottom-switch" role="group" aria-label="Choisir le bas de l'ensemble">
+      <span class="oz-pair__label">Associer la brassière avec</span>
+      <label class="oz-pair__bottom-choice"><input type="radio" name="ozran-bottom-{{ product.id }}" data-bottom-choice value="legging" {% unless product.handle == 'short-femme-alba' %}checked{% endunless %}><span>Legging Aura</span></label>
+      <label class="oz-pair__bottom-choice"><input type="radio" name="ozran-bottom-{{ product.id }}" data-bottom-choice value="short"><span>Short Alba</span></label>
+    </div>
+   {% endif %}
+   <div class="oz-pair__grid" data-oz-pair>
+    {% assign max_piece = 2 %}
+    {% if alternative_lower != blank %}{% assign max_piece = 3 %}{% endif %}
+    {% for piece in (1..max_piece) %}
+     {% if piece == 1 %}{% assign paired = upper %}{% assign kind = 'Haut' %}{% elsif piece == 3 %}{% assign paired = alternative_lower %}{% assign kind = 'Bas' %}{% else %}{% assign paired = lower %}{% assign kind = 'Bas' %}{% endif %}
+     {% if paired.id == product.id %}{% continue %}{% endif %}
+     <div class="oz-pair__item" data-piece data-bottom-type="{% if piece == 2 %}legging{% elsif piece == 3 %}short{% else %}top{% endif %}" {% if piece == 3 %}hidden{% endif %}>
+       {% if paired.media.size > 0 %}
+        <div class="oz-pair__gallery" data-pair-gallery aria-label="Photos de {{ paired.title | escape }}">
+         <div class="oz-pair__track" data-gallery-track>
+          {% for media in paired.media %}
+           {% if media.media_type == 'image' %}
+            {% liquid
+              assign media_alt = media.alt | downcase
+              assign media_url = media.preview_image.src | downcase
+              assign image_color = 'unspecified'
+              if media_alt contains 'noir' or media_alt contains 'black' or media_url contains '-noir-' or media_url contains '-black-'
+                assign image_color = 'black'
+              elsif media_alt contains 'gris' or media_alt contains 'gray' or media_alt contains 'grey' or media_url contains '-gris-' or media_url contains '-gray-'
+                assign image_color = 'gray'
+              elsif media_alt contains 'blanc' or media_alt contains 'white' or media_url contains '-blanc-' or media_url contains '-white-'
+                assign image_color = 'white'
+              elsif media_alt contains 'rose' or media_alt contains 'pink'
+                assign image_color = 'pink'
+              elsif media_alt contains 'bleu' or media_alt contains 'blue'
+                assign image_color = 'blue'
+              endif
+            %}
+            <div class="oz-pair__frame" data-gallery-frame data-media-id="{{ media.id }}" data-gallery-color="{{ image_color }}">
+              <img class="oz-pair__image" loading="lazy" src="{{ media.preview_image | image_url: width: 800 }}" alt="{{ media.alt | default: paired.title | escape }}">
+            </div>
+           {% endif %}
+          {% endfor %}
+         </div>
+         </div>
+       {% elsif paired.featured_image %}<img class="oz-pair__image" loading="lazy" src="{{ paired.featured_image | image_url: width: 800 }}" alt="{{ paired.title | escape }}">{% endif %}
+       <div class="oz-pair__details">
+       <div class="oz-pair__name">{{ paired.title }}</div>
+       <div class="oz-pair__price">{% if paired.price > 0 %}{{ paired.price | money }}{% else %}Prix à confirmer{% endif %}</div>
+       {% liquid
+         assign color_position = 0
+         assign size_position = 0
+         for opt in paired.options_with_values
+           assign option_name = opt.name | downcase
+           if option_name contains 'color' or option_name contains 'colour' or option_name contains 'couleur'
+             assign color_position = forloop.index
+           elsif option_name contains 'size' or option_name contains 'taille'
+             assign size_position = forloop.index
+           endif
+         endfor
+       %}
+       {% if color_position > 0 %}
+         <div class="oz-pair__label">Couleur du {{ kind | downcase }}</div>
+         <div class="oz-pair__colors" role="group" aria-label="Couleur du {{ kind | downcase }}">
+         {% assign found_colors = '' | split: ',' %}
+         {% for variant in paired.variants %}
+           {% assign color_value = variant.option1 %}
+           {% if color_position == 2 %}{% assign color_value = variant.option2 %}{% elsif color_position == 3 %}{% assign color_value = variant.option3 %}{% endif %}
+           {% unless found_colors contains color_value %}
+             {% assign color_key = color_value | downcase %}
+             {% assign swatch_hex = '#c3c0bb' %}
+             {% if color_key == 'black' or color_key == 'noir' %}{% assign swatch_hex = '#171717' %}
+             {% elsif color_key == 'white' or color_key == 'blanc' %}{% assign swatch_hex = '#fbfaf7' %}
+             {% elsif color_key == 'gray' or color_key == 'grey' or color_key == 'gris' %}{% assign swatch_hex = '#98999A' %}
+             {% elsif color_key == 'pink' or color_key == 'rose' %}{% assign swatch_hex = '#d99cae' %}
+             {% elsif color_key == 'blue' or color_key == 'bleu' %}{% assign swatch_hex = '#507196' %}
+             {% elsif color_key == 'red' or color_key == 'rouge' %}{% assign swatch_hex = '#a64040' %}
+             {% elsif color_key == 'beige' %}{% assign swatch_hex = '#c5ac8d' %}
+             {% elsif color_key == 'green' or color_key == 'vert' %}{% assign swatch_hex = '#566b58' %}
+             {% endif %}
+             <label class="oz-pair__swatch" title="{{ color_value | escape }}">
+               <input type="radio" data-pair-color name="oz-pair-color-{{ product.id }}-{{ piece }}" value="{{ color_value | escape }}" {% if found_colors.size == 0 %}checked{% endif %}>
+               <span class="oz-pair__swatch-circle" style="--oz-swatch:{{ swatch_hex }}" aria-hidden="true"></span>
+               <span class="oz-pair__swatch-label">{{ color_value }}</span>
+             </label>
+             {% assign single_color = color_value | split: '___ozran___' %}
+             {% assign found_colors = found_colors | concat: single_color %}
+           {% endunless %}
+         {% endfor %}
+         </div>
+       {% endif %}
+       {% if size_position == 0 %}
+         <label class="oz-pair__label" for="oz-pair-requested-size-{{ piece }}">Taille du {{ kind | downcase }}</label>
+         <div class="oz-pair__sizes{% if is_women %} oz-pair__sizes--women{% endif %}" role="group" aria-label="Taille souhaitée du {{ kind | downcase }}">
+           {% assign size_labels = 'XS,S,M,L,XL,XXL' | split: ',' %}
+           {% for size_label in size_labels %}
+             {% if is_women and size_label == 'XL' or is_women and size_label == 'XXL' %}{% continue %}{% endif %}
+             <label class="oz-pair__sizechoice"><input type="radio" name="oz-pair-size-request-{{ product.id }}-{{ piece }}" value="{{ size_label }}" {% if size_label == 'M' %}checked{% endif %}><span>{{ size_label }}</span></label>
+           {% endfor %}
+         </div>
+         <p class="oz-pair__availability">Taille souhaitée · sur demande, non commandable pour le moment</p>
+       {% endif %}
+       {% if size_position > 0 %}
+         <div class="oz-pair__label">Taille du {{ kind | downcase }}</div>
+         <div class="oz-pair__sizes" role="group" aria-label="Taille du {{ kind | downcase }}">
+         {% assign seen_sizes = '' | split: ',' %}
+         {% for variant in paired.variants %}
+           {% assign sz = variant.option1 %}
+           {% if size_position == 2 %}{% assign sz = variant.option2 %}{% elsif size_position == 3 %}{% assign sz = variant.option3 %}{% endif %}
+           {% unless seen_sizes contains sz %}
+             {% if is_women and sz == 'XL' or is_women and sz == 'XXL' %}{% continue %}{% endif %}
+             <label class="oz-pair__sizechoice"><input type="radio" data-pair-size name="oz-pair-real-size-{{ product.id }}-{{ piece }}" value="{{ sz | escape }}" {% if seen_sizes.size == 0 %}checked{% endif %}><span>{{ sz }}</span></label>
+             {% assign single = sz | split: '___ozran___' %}
+             {% assign seen_sizes = seen_sizes | concat: single %}
+           {% endunless %}
+         {% endfor %}
+         </div>
+       {% endif %}
+       <select data-variant-select hidden aria-label="Variante sélectionnée">
+         {% for variant in paired.variants %}
+           <option value="{{ variant.id }}" data-media-id="{{ variant.featured_media.id }}" data-price="{{ variant.price }}" data-color="{% if color_position == 1 %}{{ variant.option1 | escape }}{% elsif color_position == 2 %}{{ variant.option2 | escape }}{% elsif color_position == 3 %}{{ variant.option3 | escape }}{% endif %}" data-size="{% if size_position == 1 %}{{ variant.option1 | escape }}{% elsif size_position == 2 %}{{ variant.option2 | escape }}{% elsif size_position == 3 %}{{ variant.option3 | escape }}{% endif %}" {% unless variant.available %}disabled{% endunless %}>{{ variant.title }}</option>
+         {% endfor %}
+       </select>
+       <a class="oz-pair__note" href="{{ paired.url }}">Voir les détails</a>
+       </div>
+     </div>
+    {% endfor %}
+   </div>
+   <div class="oz-pair__footer"><button class="oz-pair__action" type="button" data-pair-add><span class="oz-pair__action-main">Ajouter cet article <span aria-hidden="true">✦</span></span></button></div>
+   <p class="oz-pair__status" data-pair-status role="status" aria-live="polite"></p>
+  {% endif %}
+ </div>
+</section>
+<script>
+(function(){
+ const root=document.querySelector('.oz-pair:last-of-type');if(!root||root.dataset.ready)return;root.dataset.ready='yes';
+ const money=n=>new Intl.NumberFormat(document.documentElement.lang||'fr-FR',{style:'currency',currency:{{ cart.currency.iso_code | json }}}).format(n/100);
+ const post=async(items)=>{const res=await fetch('{{ routes.cart_add_url }}.js',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items})});const data=await res.json();if(!res.ok)throw Error(data.description||'Impossible d’ajouter au panier');window.location.href='{{ routes.cart_url }}';};
+ const eclipse=root.querySelector('[data-oz-eclipse]');
+ if(eclipse){const upper=eclipse.querySelector('[data-size-top]'),lower=eclipse.querySelector('[data-size-bottom]'),btn=eclipse.querySelector('[data-add]'),status=eclipse.querySelector('[data-status]');const refresh=()=>btn.disabled=!upper.value||!lower.value;[upper,lower].forEach(el=>el.addEventListener('change',refresh));btn.addEventListener('click',async()=>{btn.disabled=true;status.textContent='Ajout en cours…';try{await post([{id:Number(eclipse.dataset.variant),quantity:1,properties:{'Taille du haut':upper.value,'Taille du bas':lower.value}}]);}catch(e){status.textContent=e.message;refresh();}});return;}
+ const allCards=[...root.querySelectorAll('[data-piece]')],cards=()=>allCards.filter(c=>!c.hidden),btn=root.querySelector('[data-pair-add]'),total=root.querySelector('[data-total]'),status=root.querySelector('[data-pair-status]');
+ const refreshGallery=(card)=>{
+   const gallery=card.querySelector('[data-pair-gallery]');if(!gallery)return;
+   const selected=(card.querySelector('[data-pair-color]:checked')?.value||'').toLowerCase();
+   const color={noir:'black',black:'black',gris:'gray',gray:'gray',grey:'gray',blanc:'white',white:'white',rose:'pink',pink:'pink',bleu:'blue',blue:'blue'}[selected]||selected;
+   const frames=[...gallery.querySelectorAll('[data-gallery-frame]')];
+   const variants=[...card.querySelectorAll('[data-variant-select] option')];
+   const size=card.querySelector('[data-pair-size]:checked')?.value;
+   const chosen=variants.find(v=>(!selected||v.dataset.color.toLowerCase()===selected)&&(!size||v.dataset.size===size)) || variants.find(v=>v.dataset.color.toLowerCase()===selected);
+   const associated=chosen?.dataset.mediaId ? frames.filter(f=>f.dataset.mediaId===chosen.dataset.mediaId) : [];
+   const matched=frames.filter(f=>f.dataset.galleryColor===color);
+   const shown=associated.length ? associated : matched.length ? matched : frames.filter(f=>f.dataset.galleryColor==='unspecified').slice(0,1);
+   if(!shown.length && frames.length)shown.push(frames[0]);
+   frames.forEach(f=>{f.hidden=!shown.includes(f);});
+   gallery.querySelector('[data-gallery-track]').scrollLeft=0;
+ };
+ const refresh=()=>{
+   let sum=0,valid=true,missingSizes=false;
+   cards().forEach(card=>{
+     refreshGallery(card);
+     const color=card.querySelector('[data-pair-color]:checked')?.value;
+     const size=card.querySelector('[data-pair-size]:checked')?.value;
+     if(!card.querySelector('[data-pair-size]')){missingSizes=true;valid=false;}
+     const select=card.querySelector('[data-variant-select]');
+     const match=[...select.options].find(o=>(!color||o.dataset.color===color)&&(!size||o.dataset.size===size));
+     if(match){select.value=match.value;sum+=Number(match.dataset.price||0);if(match.disabled)valid=false;}
+     else{select.selectedIndex=-1;valid=false;}
+   });
+   btn.disabled=!valid;
+ };
+ allCards.forEach(card=>card.querySelectorAll('[data-pair-color],[data-pair-size]').forEach(s=>s.addEventListener('change',refresh)));
+ root.querySelectorAll('[data-bottom-choice]').forEach(radio=>radio.addEventListener('change',()=>{
+   const active=root.querySelector('[data-bottom-choice]:checked')?.value;
+   allCards.forEach(card=>{if(card.dataset.bottomType!=='top')card.hidden=card.dataset.bottomType!==active;});
+   refresh();
+ }));
+ const initiallyChosen=root.querySelector('[data-bottom-choice]:checked')?.value;
+ if(initiallyChosen)allCards.forEach(card=>{if(card.dataset.bottomType!=='top')card.hidden=card.dataset.bottomType!==initiallyChosen;});
+ refresh();
+ btn.addEventListener('click',async()=>{btn.classList.remove('oz-pair__action--spark');void btn.offsetWidth;btn.classList.add('oz-pair__action--spark');btn.disabled=true;status.textContent='Ajout en cours…';try{await post(cards().map(card=>({id:Number(card.querySelector('[data-variant-select]').value),quantity:1})));}catch(e){status.textContent=e.message;btn.classList.remove('oz-pair__action--spark');refresh();}});
+
+})();
+</script>
+{% endif %}

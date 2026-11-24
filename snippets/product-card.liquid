@@ -1,0 +1,212 @@
+{%- doc -%}
+  This snippet is used to render a product card.
+  It is used in the product block, featured product block, and the product card block.
+  The product object is null or when placeholders are rendered.
+
+  @param {object} product - The product object
+  @param {object} children - The children of the product card
+  @param {object} [block] - The block object
+  @param {number} [product_card_gap] - The gap between the product card children (overrides block settings)
+  @param {string} [product_view_context] - The context in which the product card is being rendered. Used for standard events.
+{%- enddoc -%}
+
+{% assign block_settings = block.settings %}
+
+{% if request.visual_preview_mode %}
+  {% style %}
+    product-card[data-product-transition] {
+      width: 100%;
+      min-width: 250px;
+    }
+  {% endstyle %}
+{% endif %}
+
+{% liquid
+  assign has_quick_add = false
+  if settings.quick_add and product.available
+    assign has_quick_add = true
+  endif
+
+  assign has_mobile_quick_add = false
+  if has_quick_add and settings.mobile_quick_add
+    assign has_mobile_quick_add = true
+  endif
+
+  assign product_card_id = 'product-card-link-' | append: block.id | append: '-' | append: product.id
+  assign product_card_gap_value = product_card_gap | default: block_settings.product_card_gap
+
+  # variant_to_link drives the featured image used by the main-product view transition.
+  assign variant_to_link = product.selected_or_first_available_variant
+
+  if settings.transition_to_main_product
+    assign featured_image = variant_to_link.featured_image
+    if featured_image == blank
+      assign featured_image = product.featured_media.preview_image
+    endif
+
+    if featured_image != blank
+      assign featured_media_url = featured_image | image_url: width: 500
+    endif
+  endif
+
+  assign onboarding = false
+  if product.id == blank
+    assign onboarding = true
+  endif
+
+  if block_settings.background_color != blank
+    render 'contrast-override', background_color: block_settings.background_color, text_color: block_settings.text_color, section_id: block.id
+  endif
+%}
+
+<product-card
+  class="product-card size-style"
+  style="{% render 'size-style', settings: block_settings %}"
+  data-product-id="{{ product.id }}"
+  id="product-card-{{ block.id }}"
+  {% if settings.transition_to_main_product %}
+    data-product-transition="true"
+    data-featured-media-url="{{ featured_media_url }}"
+    on:click="/handleViewTransition"
+  {% endif %}
+  {{ block.shopify_attributes }}
+  {% if onboarding %}
+    data-placeholder="true"
+  {% endif %}
+  {%- unless onboarding -%}
+    view-event-payload="{{ product | standard_event_data: 'view', context: product_view_context | escape }}"
+  {%- endunless -%}
+>
+  <a
+    id="{{ product_card_id | md5 }}"
+    {% unless onboarding %}
+      {% # Link to product.url so algorithmic variant relevance and tracking params are maintained. %}
+      href="{{ product.url }}"
+    {% endunless %}
+    class="product-card__link"
+    ref="productCardLink"
+    aria-label="{{ product.title | escape }}"
+  ></a>
+  <div
+    class="
+      product-card__content
+      layout-panel-flex
+      layout-panel-flex--column
+      product-grid__card
+      spacing-style
+      border-style
+      gap-style
+      {% if block_settings.background_color != blank %} color-custom-{{ block.id }}{% endif %}
+    "
+    style="
+      {% render 'border-override', settings: block_settings %}
+      {% render 'layout-panel-style', settings: block_settings %}
+      {% render 'spacing-style', settings: block_settings %}
+      {% render 'gap-style', value: product_card_gap_value, name: 'product-card-gap' %}
+      --quick-add-display: {% if has_quick_add %}flex{% else %}none{% endif %};
+      --quick-add-mobile-display: {% if has_mobile_quick_add %}flex{% else %}none{% endif %};
+      --quick-add-mobile-opacity: {% if has_mobile_quick_add %}1{% else %}0{% endif %};
+      {% if block_settings.padding-inline-start > 0 %}--zoom-out-padding-inline-start: min(var(--padding-xs), {{ block_settings.padding-inline-start | times: 0.7}}px);{% endif %}
+      {% if block_settings.padding-inline-end > 0 %}--zoom-out-padding-inline-end: min(var(--padding-xs), {{ block_settings.padding-inline-end | times: 0.7}}px);{% endif %}
+      {% if block_settings.padding-block-start > 0 %}--zoom-out-padding-block-start: min(var(--padding-xs), {{ block_settings.padding-block-start | times: 0.7}}px);{% endif %}
+      {% if block_settings.padding-block-end > 0 %}--zoom-out-padding-block-end: min(var(--padding-xs), {{ block_settings.padding-block-end | times: 0.7}}px);{% endif %}
+    "
+  >
+    {{ children }}
+  </div>
+  {% if product != blank and product.featured_media != blank %}
+    <aside class="ozran-description-panel ozran-quick-panel" aria-label="Aperçu rapide {{ product.title | escape }}" data-variants='{{ product.variants | json | escape }}' data-product-url="{{ product.url }}">
+      <div class="ozran-quick-panel__top"><span>OZRAN / LA PIÈCE</span><button type="button" class="ozran-quick-panel__close" aria-label="Fermer">×</button></div>
+      <h3 class="ozran-quick-panel__title">{{ product.title | escape }}</h3>
+      <div class="ozran-quick-panel__price">{{ product.price | money }}</div>
+      <div class="ozran-quick-panel__description" tabindex="0" role="region" aria-label="Description du produit">{{ product.description | strip_html | escape }}</div>
+      <div class="ozran-quick-panel__variants">
+      {% unless product.has_only_default_variant %}
+        {% for option in product.options_with_values %}
+          {% assign ozran_option_name = option.name | downcase %}
+          {% assign ozran_is_color = false %}
+          {% if ozran_option_name contains 'couleur' or ozran_option_name contains 'color' %}{% assign ozran_is_color = true %}{% endif %}
+          <fieldset class="ozran-quick-panel__options{% if ozran_is_color %} ozran-quick-panel__options--color{% endif %}" data-option-index="{{ forloop.index0 }}">
+            <legend>{{ option.name | escape }}</legend>
+            <div class="ozran-quick-panel__choices">
+              {% for value in option.values %}
+                {% assign ozran_value_name = value | downcase %}
+                {% assign ozran_color = '#ddd6ce' %}
+                {% case ozran_value_name %}
+                  {% when 'black' or 'noir' %}{% assign ozran_color = '#101010' %}
+                  {% when 'white' or 'blanc' %}{% assign ozran_color = '#f7f6f3' %}
+                  {% when 'gray' or 'grey' or 'gris' or 'gris béton' %}{% assign ozran_color = '#98999a' %}
+                  {% when 'blue' or 'bleu' %}{% assign ozran_color = '#345780' %}
+                  {% when 'pink' or 'rose' %}{% assign ozran_color = '#d7a2b5' %}
+                  {% when 'red' or 'rouge' %}{% assign ozran_color = '#9e272b' %}
+                  {% when 'beige' %}{% assign ozran_color = '#c9bca7' %}
+                  {% when 'brown' or 'marron' %}{% assign ozran_color = '#65483c' %}
+                  {% when 'green' or 'vert' %}{% assign ozran_color = '#527253' %}
+                {% endcase %}
+                <label {% if ozran_is_color %}style="--ozran-swatch-color: {{ ozran_color }};" title="{{ value | escape }}"{% endif %}><input type="radio" name="ozran-{{ product.id }}-{{ option.position }}" value="{{ value | escape }}" aria-label="{{ value | escape }}" {% if option.selected_value == value %}checked{% endif %}><span>{{ value | escape }}</span></label>
+              {% endfor %}
+            </div>
+          </fieldset>
+        {% endfor %}
+      {% endunless %}
+      </div>
+      <div class="ozran-quick-panel__status" aria-live="polite"></div>
+      <button type="button" class="ozran-quick-panel__buy" data-product-id="{{ product.id }}">
+        <span class="ozran-quick-panel__buytext">FAIS PARTIE DE L’HISTOIRE</span>
+        <span class="ozran-quick-panel__seal" aria-hidden="true"></span>
+      </button>
+      <a class="ozran-quick-panel__detail" href="{{ product.url }}">DÉCOUVRIR LA PIÈCE ↗</a>
+    </aside>
+  {% endif %}
+</product-card>
+
+{% render 'product-card-styles' %}
+
+{% stylesheet %}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices{display:flex;flex-wrap:wrap;gap:8px 12px}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices label{display:block;min-width:44px;cursor:pointer}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices label>span{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;min-width:44px;min-height:52px;padding:5px 2px;border:0;border-radius:0;background:transparent;color:inherit;font:inherit;font-size:10px;line-height:1.2;text-align:center}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices label>span::before{content:"";display:block;width:26px;height:26px;flex:none;border-radius:50%;background:var(--ozran-swatch-color);border:1px solid #a49d94;box-shadow:0 0 0 3px transparent}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices input:checked+span{background:transparent;border:0}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices input:checked+span::before{outline:1px solid currentColor;outline-offset:3px}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices input:focus-visible+span{outline:0}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices input:focus-visible+span::before{outline:2px solid currentColor;outline-offset:4px}
+
+.ozran-quick-panel .ozran-quick-panel__description{display:block!important;line-height:1.6!important;height:4.8em!important;min-height:4.8em;max-height:4.8em!important;overflow-x:hidden;overflow-y:auto!important;touch-action:pan-y pinch-zoom;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scrollbar-width:thin;margin:0;text-align:left}
+.ozran-quick-panel .ozran-quick-panel__description:focus-visible{outline:1px solid currentColor;outline-offset:2px}
+.ozran-quick-panel .ozran-quick-panel__variants{display:flex;flex-direction:column;gap:10px;min-width:0;overflow:visible;touch-action:pan-y pinch-zoom}
+@media(max-width:749px){
+.product-card:has(>.ozran-quick-panel){grid-template-rows:auto auto;align-content:start}
+.product-card>.product-card__content{align-self:start;justify-content:flex-start}
+.product-card .product-card__content [ref="productTitleLink"] .text-block{min-height:2.6em;text-align:left}
+.product-card .product-card__content [ref="productTitleLink"] [role="heading"]{line-height:1.3;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;min-height:2.6em}
+.product-card .product-card__content product-price{min-height:1.4em;line-height:1.4;text-align:left;font-variant-numeric:tabular-nums}
+.product-card>.ozran-quick-panel:not(.ozran-panel-floating){display:grid;grid-template-rows:20px 47px 20px 53px minmax(148px,auto) 0px 46px 20px;gap:8px;align-content:start;align-items:start;align-self:start;margin-top:12px;min-width:0}
+.ozran-quick-panel .ozran-quick-panel__title{font-size:18px!important;line-height:1.3!important;min-height:2.6em;margin:0!important;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-align:left!important}
+.ozran-quick-panel .ozran-quick-panel__price{font-size:13px;line-height:20px;margin:0;font-variant-numeric:tabular-nums;text-align:left!important}
+.ozran-quick-panel .ozran-quick-panel__description{font-size:11px!important}
+.product-card>.ozran-quick-panel:not(.ozran-panel-floating) .ozran-quick-panel__variants{height:auto;min-height:148px;max-height:none;width:100%}
+.ozran-quick-panel .ozran-quick-panel__status:empty{min-height:0;margin:0}
+.ozran-quick-panel .ozran-quick-panel__buy{width:100%;min-height:46px;height:46px;margin:0;align-self:end}
+.ozran-quick-panel .ozran-quick-panel__detail{width:100%;margin:0;font-size:9px;text-align:center;line-height:20px}
+.ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__variants{max-height:none;overflow:visible;flex-shrink:0}
+}
+
+
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px 4px;padding:5px;overflow:visible}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices>label{grid-column:span 2;min-width:0;justify-self:center;width:100%}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices:has(>label:nth-child(5):last-child)>label:nth-child(4){grid-column:2 / span 2}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices:has(>label:nth-child(5):last-child)>label:nth-child(5){grid-column:4 / span 2}
+.ozran-quick-panel .ozran-quick-panel__options.ozran-quick-panel__options--color .ozran-quick-panel__choices label>span{min-width:0;width:100%;padding-inline:0}
+@media(max-width:749px){
+.product-card .card-gallery{width:100%;aspect-ratio:var(--gallery-aspect-ratio,4/5);flex:none}
+.product-card .card-gallery :is(slideshow-component,slideshow-container,slideshow-slides){height:100%;min-height:0}
+.product-card .card-gallery slideshow-slide.product-media-container{height:100%;align-self:stretch;--product-media-fit:contain}
+.product-card .card-gallery .product-media{height:100%;width:100%;--product-media-fit:contain}
+.product-card .card-gallery .product-media img{width:100%;height:100%;object-fit:contain!important;object-position:center!important;transform:none!important}
+}
+
+{% endstylesheet %}
+
+
+

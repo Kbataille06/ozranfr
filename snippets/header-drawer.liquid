@@ -1,0 +1,2108 @@
+{%- doc -%}
+  Renders a header drawer menu triggered by the top details element.
+
+  @param {object} linklist - The linklist to render
+  @param {string} [class] - Additional classes to add to the drawer
+  @param {string} [data_header_drawer_type] - The type of header drawer to render
+  @param {object} [block] - The block that can be used to provide settings
+  @param {object} [section] - The section that can be used to provide settings
+
+  @example
+  {% render 'header-drawer', linklist: section.settings.menu, class: 'header-drawer--mobile' %}
+{%- enddoc -%}
+
+{% render 'summary-icon-styles' %}
+
+{% liquid
+  assign block_settings = block.settings
+  assign max_featured_items = 4
+  assign image_border_radius = block_settings.image_border_radius
+
+  if block_settings.menu_style == 'featured_collections'
+    assign ratio = block_settings.featured_collections_aspect_ratio
+  elsif block_settings.menu_style == 'featured_products'
+    assign ratio = block_settings.featured_products_aspect_ratio
+  endif
+
+  ##
+  # We only eager load heavy elements of the page when rendering this template
+  # through the Section Rendering API.
+  #
+  # This keeps the initial render lightweight, minimizing the impact on TTFB.
+  # The second render then refreshes the page with additional content.
+  #
+  # At the moment, we check if the Section Rendering API is being used by
+  # checking if section.index is blank.
+  assign eager_loading = false
+  if section.index == blank
+    assign eager_loading = true
+  endif
+
+  if block_settings.background_color != blank or block_settings.text_color != blank
+    render 'contrast-override', background_color: block_settings.background_color, text_color: block_settings.text_color, section_id: block.id
+  endif
+%}
+
+<script
+  src="{{ 'header-drawer.js' | asset_url }}"
+  type="module"
+  fetchpriority="low"
+></script>
+
+<header-drawer
+  class="header-drawer {{ class }}"
+  style="--menu-image-border-radius: {{ image_border_radius }}px; --resource-card-corner-radius: {{ image_border_radius }}px;{% if block_settings.drawer_divider_color != blank %} --drawer-divider-color: {{ block_settings.drawer_divider_color }};{% endif %}"
+>
+  <details
+    id="Details-menu-drawer-container"
+    data-skip-node-update="true"
+    class="menu-drawer-container"
+    ref="details"
+    scroll-lock
+  >
+    <summary
+      class="header__icon header__icon--menu header__icon--summary"
+      aria-label="{{ 'accessibility.menu' | t }}"
+      on:click="/toggle"
+    >
+      <span class="svg-wrapper header-drawer-icon header-drawer-icon--open">
+        {{- 'icon-menu.svg' | inline_asset_content -}}
+      </span>
+      <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+        {{- 'icon-close-menu.svg' | inline_asset_content -}}
+      </span>
+    </summary>
+    <div
+      ref="menuDrawer"
+      class="
+        menu-drawer
+        {% if block_settings.background_color != blank or block_settings.text_color != blank %}
+          color-custom-{{ block.id }}
+        {% endif %}
+      "
+    >
+      <button
+        class="button close-button menu-drawer__close-button focus-inset"
+        type="button"
+        aria-label="{{ 'actions.close' | t }}"
+        on:click="/close"
+      >
+        <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+          {{- 'icon-close-menu.svg' | inline_asset_content -}}
+        </span>
+      </button>
+      {% comment %}OZRAN mobile — centered logo, cart, horizontally scrollable menu tabs{% endcomment %}
+      <style>
+@media screen and (max-width:749px){
+ .ozran-mobile-nav #ozran-tab-editions{color:#d0b586!important;position:relative;text-shadow:0 0 9px rgba(208,181,134,.18);animation:ozran-mobile-editions-breathe 3.8s ease-in-out infinite;}
+ .ozran-mobile-nav #ozran-tab-editions.is-active{color:#e8c996!important;border-bottom-color:#d0b586!important;}
+ .ozran-mobile-nav #ozran-tab-editions::after{content:'';position:absolute;bottom:6px;left:18%;right:18%;height:1px;background:#c9ab78;opacity:.55;transform:scaleX(.5);transition:transform .3s ease,opacity .3s ease;}
+ .ozran-mobile-nav #ozran-tab-editions.is-active::after{opacity:1;transform:scaleX(1);}
+}
+@keyframes ozran-mobile-editions-breathe{0%,100%{text-shadow:0 0 4px rgba(208,181,134,.12)}50%{text-shadow:0 0 15px rgba(208,181,134,.52)}}
+@media(prefers-reduced-motion:reduce){.ozran-mobile-nav #ozran-tab-editions{animation:none!important}}
+</style>
+<style id="ozran-mobile-product-menu-20261031">\n@media(max-width:749px){.ozran-mobile-nav__products--compact{margin-bottom:22px;row-gap:12px}.ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image{aspect-ratio:4/4.2}.ozran-mobile-nav__listing-label{font-size:10px;letter-spacing:.16em;color:#999;margin:16px 0 4px;border-top:1px solid #343434;padding-top:17px}.ozran-mobile-nav__products--compact .ozran-mobile-nav__product-name{font-size:11px}}
+@media screen and (max-width:749px){
+ .ozran-mobile-nav__eyebrow{display:flex;align-items:center;gap:8px;margin:1px 0 18px;color:#e7e2db;font-size:10px;font-weight:600;letter-spacing:.16em;line-height:1.5}
+ .ozran-mobile-nav__eyebrow span{color:#85817c;font-weight:400}
+ .ozran-mobile-nav__eyebrow--edition{color:#d6ba8b}
+ .ozran-mobile-nav__products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:15px;row-gap:22px;align-items:start;padding-bottom:14px}
+ .ozran-mobile-nav__product{min-width:0;display:flex;flex-direction:column;gap:9px;text-decoration:none;color:#e8e5e0;-webkit-tap-highlight-color:transparent}
+ .ozran-mobile-nav__product-image{display:block;aspect-ratio:4/4.7;background:#191919;overflow:hidden;border:1px solid rgba(255,255,255,.065);border-radius:2px}
+ .ozran-mobile-nav__product-image img{display:block;width:100%;height:100%;object-fit:contain;object-position:center;transition:transform .45s cubic-bezier(.22,1,.36,1)}
+ .ozran-mobile-nav__product:active img{transform:scale(1.035)}
+ .ozran-mobile-nav__product-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;font-size:12px;font-weight:450;line-height:1.45;letter-spacing:.01em}
+ .ozran-mobile-nav #ozran-tab-editions{color:#dfc394!important;background-image:linear-gradient(110deg,#a98b62 8%,#e7cc97 35%,#fff5d6 47%,#cba56c 58%,#a98b62 90%)!important;background-size:240% 100%!important;background-clip:text!important;-webkit-background-clip:text!important;-webkit-text-fill-color:transparent!important;animation:ozran-editions-shimmer 4.2s ease-in-out infinite!important}
+ .ozran-mobile-nav #ozran-tab-editions.is-active{border-bottom-color:#dfc394!important}
+}
+@keyframes ozran-editions-shimmer{0%,24%,100%{background-position:100% 0;filter:drop-shadow(0 0 0 transparent)}46%{background-position:0 0;filter:drop-shadow(0 0 5px rgba(238,201,139,.45))}65%{background-position:0 0;filter:drop-shadow(0 0 0 transparent)}}
+@media(prefers-reduced-motion:reduce){.ozran-mobile-nav #ozran-tab-editions{animation:none!important}}
+</style>
+<style id="ozran-mobile-art-direction-20261031">
+@media screen and (max-width:749px){
+ .ozran-mobile-nav__products--compact{margin-inline:auto!important;justify-content:center!important}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image{display:flex!important;align-items:center!important;justify-content:center!important}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;object-position:50% 50%!important;margin:auto!important}
+}
+
+@media(max-width:749px){.ozran-mobile-nav__products--compact{margin-top:20px!important;gap:12px!important;max-width:310px}.ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image{aspect-ratio:4/4.5!important}.ozran-mobile-nav__product-price{font-size:11px;line-height:1.3;color:#aaa59e;font-weight:500;letter-spacing:.02em}.ozran-mobile-nav__product{gap:5px!important}.ozran-mobile-nav__nested--articles .ozran-mobile-nav__grandchildren{display:flex!important;flex-direction:column!important}.ozran-mobile-nav__nested--articles .ozran-mobile-nav__article-link{display:block!important}}
+@media screen and (max-width:749px){
+ .ozran-mobile-nav__products--compact{gap:14px;margin:0 0 23px}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image{aspect-ratio:4/5;background:#181818;border:1px solid rgba(255,255,255,.075);border-radius:2px;box-shadow:0 8px 20px rgba(0,0,0,.13)}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image img{object-fit:contain;object-position:center;width:100%;height:100%;filter:contrast(1.025);transform:scale(.96);transition:transform .4s ease}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product:active img{transform:scale(1)}
+ .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-name{font-size:11px;line-height:1.45;letter-spacing:.025em}
+ .ozran-mobile-nav__nested--articles{margin-top:8px;border-top:1px solid rgba(255,255,255,.12)}
+ .ozran-mobile-nav__nested--articles>summary{font-size:15px!important;letter-spacing:.06em!important;min-height:58px!important}
+ .ozran-mobile-nav__nested--articles .ozran-mobile-nav__grandchildren{padding:8px 0 14px 14px}
+ .ozran-mobile-nav__nested--articles .ozran-mobile-nav__article-link{display:block;padding:11px 3px;color:#c9c5c0;font-size:14px;line-height:1.45;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05)}
+}
+</style>
+<style id="ozran-nexus-nested-mobile">
+@media(max-width:749px){
+ .ozran-nexus-mobile__categories{padding:3px 0 13px 12px!important}
+ .ozran-nexus-mobile__category{border-bottom:1px solid rgba(255,255,255,.09)}
+ .ozran-nexus-mobile__category>summary{display:flex;justify-content:space-between;align-items:center;min-height:47px;padding:10px 4px;color:#eee7df;font-size:14px;letter-spacing:.04em;list-style:none;cursor:pointer}
+ .ozran-nexus-mobile__category>summary::-webkit-details-marker{display:none}
+ .ozran-nexus-mobile__category[open]>summary span:last-child{transform:rotate(45deg)}
+ .ozran-nexus-mobile__articles{display:flex;flex-direction:column;padding:2px 0 12px 12px}
+ .ozran-nexus-mobile__articles a{display:block;padding:10px 4px;color:#c8c1b7;font-size:13px;line-height:1.4;text-decoration:none}
+ .ozran-nexus-mobile__articles .ozran-nexus-mobile__all{font-size:11px;letter-spacing:.05em;color:#d5ba8f}
+}
+</style>
+<nav class="ozran-mobile-nav" aria-label="Navigation OZRAN mobile">
+        <div class="ozran-mobile-nav__top">
+          <a class="ozran-mobile-nav__brand" href="{{ routes.root_url }}" aria-label="Accueil OZRAN">
+            {% if settings.logo != blank %}
+              <img src="{{ settings.logo | image_url: width: 360 }}" alt="{{ shop.name | escape }}" width="180" height="52" loading="eager">
+            {% else %}<span>OZRAN</span>{% endif %}
+          </a>
+          <a class="ozran-mobile-nav__account" href="{{ routes.account_url }}" aria-label="Mon compte"><svg viewBox="0 0 20 20" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.35" aria-hidden="true"><circle cx="10" cy="6.1" r="3.1"/><path d="M3.6 17c.45-3.7 2.6-5.4 6.4-5.4s5.95 1.7 6.4 5.4"/></svg></a>
+          <a class="ozran-mobile-nav__cart" href="{{ routes.cart_url }}" aria-label="Voir le panier">
+            <span class="ozran-mobile-nav__cart-icon" aria-hidden="true">{{ 'icon-cart.svg' | inline_asset_content }}</span>
+            <span class="ozran-cart-orbit" aria-hidden="true"></span><span class="ozran-cart-count{% if cart.item_count == 0 %} is-empty{% endif %}" data-ozran-cart-count aria-hidden="true">{{ cart.item_count }}</span><span class="ozran-cart-toast" data-ozran-cart-toast aria-hidden="true"><strong data-ozran-cart-toast-number>{{ cart.item_count }}</strong><span data-ozran-cart-toast-label>PIÈCES</span></span><span class="visually-hidden" data-ozran-cart-description>{{ cart.item_count }} article(s) dans le panier</span>
+          </a>
+        </div>
+        <div class="ozran-mobile-nav__tabs" role="tablist" aria-label="Rubriques">
+          {% assign ozran_tab_index = 0 %}
+          {% for link in linklist.links %}
+            {% assign ozran_menu_title = link.title | strip | downcase %}
+            {% unless ozran_menu_title == 'boutique' or ozran_menu_title == 'shop' or ozran_menu_title == 'accueil' or ozran_menu_title == 'home' %}
+              {% if ozran_menu_title contains 'propos' %}<a class="ozran-mobile-nav__tab ozran-mobile-nav__tab--link" href="/pages/a-propos-ozran">{{ link.title | escape }}</a>{% else %}<button class="ozran-mobile-nav__tab{% if ozran_tab_index == 0 %} is-active{% endif %}" type="button" role="tab" id="ozran-tab-{{ forloop.index }}" aria-controls="ozran-panel-{{ forloop.index }}" aria-selected="{% if ozran_tab_index == 0 %}true{% else %}false{% endif %}" tabindex="{% if ozran_tab_index == 0 %}0{% else %}-1{% endif %}">{{ link.title | escape }}</button>{% endif %}
+              {% if ozran_menu_title == 'homme' %}
+                <button class="ozran-mobile-nav__tab" type="button" role="tab" id="ozran-tab-editions" aria-controls="ozran-panel-editions" aria-selected="false" tabindex="-1">ÉDITIONS</button>
+              {% endif %}
+              {% assign ozran_tab_index = ozran_tab_index | plus: 1 %}
+            {% endunless %}
+          {% endfor %}
+          {% if shop.customer_accounts_enabled %}<button class="ozran-mobile-nav__tab ozran-mobile-nav__tab--id" type="button" role="tab" id="ozran-tab-id" aria-controls="ozran-panel-id" aria-selected="false" tabindex="-1">OZRAN ID</button>{% endif %}
+          <a class="ozran-mobile-nav__tab ozran-mobile-nav__tab--link" href="/pages/contact">CONTACT</a>
+        </div>
+        <div class="ozran-mobile-nav__content">
+          {% assign ozran_panel_index = 0 %}
+          {% for link in linklist.links %}
+            {% assign ozran_menu_title = link.title | strip | downcase %}
+            {% unless ozran_menu_title == 'boutique' or ozran_menu_title == 'shop' or ozran_menu_title == 'accueil' or ozran_menu_title == 'home' %}
+              {% unless ozran_menu_title contains 'propos' %}
+              <section class="ozran-mobile-nav__panel" id="ozran-panel-{{ forloop.index }}" role="tabpanel" aria-labelledby="ozran-tab-{{ forloop.index }}" {% unless ozran_panel_index == 0 %}hidden{% endunless %}>
+                {% if ozran_menu_title == 'homme' or ozran_menu_title == 'femme' or ozran_menu_title == 'accessoires' %}
+                  {% liquid
+                    assign ozran_collection_handle = 'frontpage'
+                    if ozran_menu_title == 'femme'
+                      assign ozran_collection_handle = 'womens-casual-wear-example-products'
+                    elsif ozran_menu_title == 'accessoires'
+                      assign ozran_collection_handle = 'unisexe'
+                    endif
+                  %}
+                  <div class="ozran-mobile-nav__eyebrow">DÉCOUVRIR <span>{{ link.title | escape }}</span></div>
+
+                  <details class="ozran-mobile-nav__nested ozran-mobile-nav__nested--articles" data-collection-href="{{ collections[ozran_collection_handle].url }}">
+                    <summary><span>Les articles</span><span class="ozran-mobile-nav__arrow" aria-hidden="true">+</span></summary>
+                    <div class="ozran-mobile-nav__grandchildren">
+                      {% for ozran_product in collections[ozran_collection_handle].products %}
+                        {% assign ozran_exclude = false %}
+                        {% if ozran_menu_title == 'homme' or ozran_menu_title == 'femme' %}
+                          {% assign ozran_product_name_lower = ozran_product.title | downcase %}
+                          {% if ozran_product_name_lower contains 'nexus' or ozran_product_name_lower contains 'éclipse' or ozran_product_name_lower contains 'eclipse' %}
+                            {% assign ozran_exclude = true %}
+                          {% endif %}
+                        {% endif %}
+                        {% unless ozran_exclude %}
+                          <a class="ozran-mobile-nav__article-link" href="{{ ozran_product.url }}">{{ ozran_product.title | escape }}</a>
+                        {% endunless %}
+                      {% endfor %}
+                      <a class="ozran-mobile-nav__article-link ozran-mobile-nav__all-articles" href="{{ collections[ozran_collection_handle].url }}">Collection complète <span aria-hidden="true">↗</span></a>
+                    </div>
+                  </details>
+                  <div class="ozran-mobile-nav__products ozran-mobile-nav__products--compact">
+                    {% assign ozran_preview_count = 0 %}
+                    {% for ozran_product in collections[ozran_collection_handle].products %}
+                      {% assign ozran_edition_item = false %}
+                      {% if ozran_menu_title == 'homme' or ozran_menu_title == 'femme' %}
+                        {% if ozran_product.title contains 'Nexus' or ozran_product.title contains 'Éclipse' %}{% assign ozran_edition_item = true %}{% endif %}
+                      {% endif %}
+                      {% unless ozran_edition_item %}
+                        {% if ozran_preview_count < 2 %}
+                          <a class="ozran-mobile-nav__product" href="{{ ozran_product.url }}">
+                            <span class="ozran-mobile-nav__product-image">{% if ozran_product.featured_image %}<img src="{{ ozran_product.featured_image | image_url: width: 520 }}" alt="{{ ozran_product.title | escape }}" width="260" height="325" loading="lazy">{% endif %}</span>
+                            <span class="ozran-mobile-nav__product-name">{{ ozran_product.title | escape }}</span><span class="ozran-mobile-nav__product-price">{% if ozran_product.price > 0 %}{{ ozran_product.price | money }}{% else %}Prix à venir{% endif %}</span>
+                          </a>
+                          {% assign ozran_preview_count = ozran_preview_count | plus: 1 %}
+                        {% endif %}
+                      {% endunless %}
+                    {% endfor %}
+                  </div>
+                {% elsif link.links != blank %}
+                  {% for childlink in link.links %}
+                    <a class="ozran-mobile-nav__section-link" href="{{ childlink.url }}">{{ childlink.title | escape }}<span aria-hidden="true">›</span></a>
+                  {% endfor %}
+                {% else %}
+                  <a class="ozran-mobile-nav__section-link" href="{{ link.url }}">Découvrir {{ link.title | escape }}<span aria-hidden="true">›</span></a>
+                {% endif %}
+              </section>
+              {% if ozran_menu_title == 'homme' %}
+                <section class="ozran-mobile-nav__panel" id="ozran-panel-editions" role="tabpanel" aria-labelledby="ozran-tab-editions" hidden>
+                  <div class="ozran-mobile-nav__eyebrow ozran-mobile-nav__eyebrow--edition">ÉDITIONS <span>OZRAN</span></div>
+
+                  <details class="ozran-mobile-nav__nested ozran-nexus-mobile">
+                    <summary><span>Nexus</span><span class="ozran-mobile-nav__arrow" aria-hidden="true">+</span></summary>
+                    <div class="ozran-mobile-nav__grandchildren ozran-nexus-mobile__categories">
+                      <details class="ozran-nexus-mobile__category">
+                        <summary><span>Homme</span><span aria-hidden="true">+</span></summary>
+                        <div class="ozran-nexus-mobile__articles">
+                          {% for ozran_item in collections['ozran-nexus-homme'].products %}
+                            <a href="{{ ozran_item.url }}">{{ ozran_item.title | escape }}</a>
+                          {% endfor %}
+                          <a class="ozran-nexus-mobile__all" href="/collections/ozran-nexus-homme">Collection Homme ↗</a>
+                        </div>
+                      </details>
+                      <details class="ozran-nexus-mobile__category">
+                        <summary><span>Femme</span><span aria-hidden="true">+</span></summary>
+                        <div class="ozran-nexus-mobile__articles">
+                          {% for ozran_item in collections['ozran-nexus-femme'].products %}
+                            <a href="{{ ozran_item.url }}">{{ ozran_item.title | escape }}</a>
+                          {% endfor %}
+                          <a class="ozran-nexus-mobile__all" href="/collections/ozran-nexus-femme">Collection Femme ↗</a>
+                        </div>
+                      </details>
+                      <a href="/collections/ozran-nexus">Toute la collection Nexus</a>
+                    </div>
+                  </details>
+                  <a class="ozran-mobile-nav__section-link" href="/collections/ozran-eclipse">Limited Edition (Éclipse)<span aria-hidden="true">›</span></a>
+                  <div class="ozran-mobile-nav__products ozran-mobile-nav__products--compact">
+                    {% for ozran_product in collections['ozran-nexus'].products limit: 1 %}
+                      <a class="ozran-mobile-nav__product" href="{{ ozran_product.url }}"><span class="ozran-mobile-nav__product-image">{% if ozran_product.featured_image %}<img src="{{ ozran_product.featured_image | image_url: width: 400 }}" alt="{{ ozran_product.title | escape }}" width="200" height="230" loading="lazy">{% endif %}</span><span class="ozran-mobile-nav__product-name">{{ ozran_product.title | escape }}</span><span class="ozran-mobile-nav__product-price">{% if ozran_product.price > 0 %}{{ ozran_product.price | money }}{% else %}Prix à venir{% endif %}</span></a>
+                    {% endfor %}
+                    {% for ozran_product in collections['ozran-eclipse'].products limit: 1 %}
+                      <a class="ozran-mobile-nav__product" href="{{ ozran_product.url }}"><span class="ozran-mobile-nav__product-image">{% if ozran_product.featured_image %}<img src="{{ ozran_product.featured_image | image_url: width: 400 }}" alt="{{ ozran_product.title | escape }}" width="200" height="230" loading="lazy">{% endif %}</span><span class="ozran-mobile-nav__product-name">{{ ozran_product.title | escape }}</span><span class="ozran-mobile-nav__product-price">{% if ozran_product.price > 0 %}{{ ozran_product.price | money }}{% else %}Prix à venir{% endif %}</span></a>
+                    {% endfor %}
+                  </div>
+                </section>
+              {% endif %}
+              {% assign ozran_panel_index = ozran_panel_index | plus: 1 %}
+              {% endunless %}
+            {% endunless %}
+          {% endfor %}
+          {% if shop.customer_accounts_enabled %}
+          <section class="ozran-mobile-nav__panel ozran-id-panel" id="ozran-panel-id" role="tabpanel" aria-labelledby="ozran-tab-id" hidden>
+            <div class="ozran-id-panel__eyebrow">OZRAN / ESPACE PERSONNEL</div>
+            <h2 class="ozran-id-panel__heading">OZRAN <em>ID.</em></h2>
+            <p class="ozran-id-panel__intro">Votre identité. Vos pièces. Votre histoire.</p>
+            <div class="ozran-id-panel__line" aria-hidden="true"></div>
+            <a href="{{ routes.account_url }}" class="ozran-id-panel__primary">ACCÉDER À MON COMPTE <span aria-hidden="true">↗</span></a>
+            <p class="ozran-id-panel__explain">Retrouvez vos commandes, leur suivi et vos informations personnelles dans votre espace sécurisé Shopify.</p>
+            <div class="ozran-id-panel__links">
+              <a class="ozran-id-panel__item" href="{{ routes.account_url }}"><span class="ozran-id-panel__index">01</span><span>Mes commandes et leur suivi</span><span aria-hidden="true">↗</span></a>
+              <a class="ozran-id-panel__item" href="{{ routes.account_url }}"><span class="ozran-id-panel__index">02</span><span>Mes coordonnées et adresses</span><span aria-hidden="true">↗</span></a>
+              <a class="ozran-id-panel__item" href="/pages/contact"><span class="ozran-id-panel__index">03</span><span>Contacter OZRAN</span><span aria-hidden="true">↗</span></a>
+            </div>
+            <p class="ozran-id-panel__foot">OZRAN — WEAR YOUR AMBITION</p>
+          </section>
+          {% endif %}
+        </div>
+      </nav>
+      
+      <script>
+        (function(){
+          function initOzranTabs(root){
+            if(!root || root.dataset.ozranTabsReady)return;
+            root.dataset.ozranTabsReady='true';
+            // Only the "Les articles" summaries use two-stage navigation.
+            // Closed: allow native <details> to open. Open: follow its collection.
+            root.querySelectorAll('.ozran-mobile-nav__nested--articles').forEach(function(details){
+              var summary=details.querySelector('summary');
+              var href=details.getAttribute('data-collection-href');
+              if(!summary || !href)return;
+              summary.addEventListener('click',function(event){
+                if(!details.open)return;
+                event.preventDefault();
+                window.location.href=href;
+              });
+            });
+            var tabs=Array.from(root.querySelectorAll('.ozran-mobile-nav__tab'));
+            tabs.forEach(function(tab){
+              tab.addEventListener('click',function(){
+                tabs.forEach(function(t){
+                  var active=t===tab;
+                  t.classList.toggle('is-active',active);
+                  t.setAttribute('aria-selected',String(active));
+                  t.tabIndex=active?0:-1;
+                  var panel=root.querySelector('#'+t.getAttribute('aria-controls'));
+                  if(panel)panel.hidden=!active;
+                });
+                tab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+              });
+            });
+          }
+          var nav=document.currentScript.previousElementSibling;
+          if(nav && nav.classList.contains('ozran-mobile-nav'))initOzranTabs(nav);
+        })();
+      </script>
+
+      <script>
+        (function () {
+          var root = document.currentScript.previousElementSibling;
+          if (!root || !root.classList.contains('ozran-mobile-nav') || root.dataset.ozranCartReady) return;
+          root.dataset.ozranCartReady = 'true';
+          var badge = root.querySelector('[data-ozran-cart-count]');
+          var description = root.querySelector('[data-ozran-cart-description]');
+          var link = root.querySelector('.ozran-mobile-nav__cart');
+          var previous = Number(badge.textContent.trim()) || 0;
+          var toast = root.querySelector('[data-ozran-cart-toast]');
+          var toastNumber = root.querySelector('[data-ozran-cart-toast-number]');
+          var toastLabel = root.querySelector('[data-ozran-cart-toast-label]');
+          var toastTimer;
+          var requestNumber = 0;
+          function setCount(count) {
+            count = Math.max(0, Number(count) || 0);
+            badge.textContent = count > 99 ? '99+' : String(count);
+            badge.classList.toggle('is-empty', count === 0);
+            description.textContent = count + (count === 1 ? ' article dans le panier' : ' articles dans le panier');
+            link.setAttribute('aria-label', 'Panier, ' + description.textContent);
+            if (count !== previous) {
+              badge.classList.remove('ozran-cart-count--pop');
+              void badge.offsetWidth;
+              badge.classList.add('ozran-cart-count--pop');
+              link.classList.remove('ozran-cart-activated');
+              void link.offsetWidth;
+              link.classList.add('ozran-cart-activated');
+              toastNumber.textContent=String(count).padStart(2,'0');
+              toastLabel.textContent=count===1?'PIÈCE':'PIÈCES';
+              toast.classList.add('is-visible');
+              clearTimeout(toastTimer);
+              toastTimer=setTimeout(function(){toast.classList.remove('is-visible');link.classList.remove('ozran-cart-activated')},2000);
+              previous = count;
+            }
+          }
+          function refresh() {
+            var n = ++requestNumber;
+            fetch((window.Shopify && window.Shopify.routes ? window.Shopify.routes.root : '/') + 'cart.js', {credentials:'same-origin'})
+              .then(function(response){if(!response.ok)throw new Error('Panier inaccessible');return response.json()})
+              .then(function(cart){if(n===requestNumber)setCount(cart.item_count)})
+              .catch(function(){});
+          }
+          link.setAttribute('aria-label','Panier, ' + description.textContent);
+          document.addEventListener('cart:refresh',refresh);
+          document.addEventListener('cart:update',refresh);
+          document.addEventListener('cart:change',refresh);
+          document.addEventListener('cart:updated',refresh);
+          root.closest('header-drawer')?.addEventListener('click',function(event){
+            if(event.target.closest('.header__icon--menu'))refresh();
+          });
+        })();
+      </script>
+      <nav
+        class="menu-drawer__navigation"
+        style="
+          {%- render 'menu-font-styles', settings: block_settings, menu_type: 'drawer' %}
+          {%- render 'submenu-font-styles', settings: block_settings %}
+        "
+        aria-label="{{ 'accessibility.header_navigation_label' | t }}"
+      >
+        <ul
+          class="menu-drawer__menu has-submenu"
+          role="list"
+        >
+          {%- comment -%}
+            Handle menus with fewer than 3 levels of links
+          {%- endcomment -%}
+          {% if linklist.levels < 3 %}
+            {% assign first_accordion_open = false %}
+            {% assign animation_index = 0 %}
+            {%- for link in linklist.links -%}
+              {% assign animation_index = animation_index | plus: 1 %}
+              <li
+                style="--menu-drawer-animation-index: {{ animation_index }};"
+                class="{%- if block_settings.drawer_accordion -%}menu-drawer__list-item--deep{%- else -%}menu-drawer__list-item--flat{%- endif -%}{% if block_settings.drawer_dividers %} menu-drawer__list-item--divider{% endif %}"
+              >
+                {% if block_settings.drawer_accordion and link.links != blank %}
+                  {%- comment -%}
+                    Accordion for links with children, in menus with fewer than 3 levels of links
+                  {%- endcomment -%}
+                  {% liquid
+                    assign should_open_first = false
+                    if first_accordion_open == false and block_settings.drawer_accordion_expand_first
+                      assign first_accordion_open = true
+                      assign should_open_first = true
+                    endif
+                  %}
+                  {% capture accordion_children %}
+                    <details
+                      id="Details-menu-drawer-{{ link.handle }}"
+                    >
+                      <summary
+                        id="HeaderDrawer-{{ link.handle }}"
+                        class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element"
+                      >
+                        <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                        <span class="svg-wrapper icon-plus">
+                          {{- 'icon-plus.svg' | inline_asset_content -}}
+                        </span>
+                      </summary>
+                      {% liquid
+                        assign render_link_image = false
+                        if block_settings.menu_style == 'collection_images'
+                          assign catalog_links = link.links | where: 'type', 'catalog_link'
+                          assign collection_list_links = link.links | where: 'type', 'collections_link'
+                          assign collection_links = link.links | where: 'type', 'collection_link'
+                          if catalog_links.size > 0 or collection_list_links.size > 0 or collection_links.size > 0
+                            assign render_link_image = true
+                          endif
+                        endif
+                      %}
+                      <ul
+                        class="menu-drawer__menu menu-drawer__menu--childlist menu-drawer__animated-element details-content{% if render_link_image %} menu-drawer__menu--grid{% endif %}"
+                        role="list"
+                        tabindex="-1"
+                      >
+                        {%- for childlink in link.links -%}
+                          <li
+                            class="menu-drawer__list-item"
+                            style="--menu-drawer-animation-index: {{ forloop.index }};"
+                          >
+                            <a
+                              id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
+                              href="{{ childlink.url }}"
+                              class="menu-drawer__menu-item menu-drawer__menu-item--child{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
+                              {% if childlink.current %}
+                                aria-current="page"
+                              {% endif %}
+                            >
+                              {% if render_link_image %}
+                                {% render 'link-featured-image',
+                                  link: childlink,
+                                  class: 'menu-drawer__link-image',
+                                  sizes: 'auto, 400px'
+                                %}
+                              {% endif %}
+                              <span class="menu-drawer__menu-item-text wrap-text">{{ childlink.title | escape }}</span>
+                            </a>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    </details>
+                  {% endcapture %}
+                  {% render 'accordion-custom-component',
+                    children: accordion_children,
+                    open_by_default_on_mobile: should_open_first
+                  %}
+                {% elsif block_settings.drawer_accordion == false and link.links != blank %}
+                  {%- comment -%}
+                    Flat menus for links with children, in menus with fewer than 3 levels of links
+                  {%- endcomment -%}
+                  <a
+                    id="HeaderDrawer-{{ link.handle }}"
+                    href="{{ link.url }}"
+                    class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element"
+                    {% if link.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                  </a>
+                  {% liquid
+                    assign render_link_image = false
+                    if block_settings.menu_style == 'collection_images'
+                      assign catalog_links = link.links | where: 'type', 'catalog_link'
+                      assign collection_list_links = link.links | where: 'type', 'collections_link'
+                      assign collection_links = link.links | where: 'type', 'collection_link'
+                      if catalog_links.size > 0 or collection_list_links.size > 0 or collection_links.size > 0
+                        assign render_link_image = true
+                      endif
+                    endif
+                  %}
+                  <ul
+                    class="menu-drawer__menu menu-drawer__menu--childlist{% if render_link_image %} menu-drawer__menu--grid{% endif %}"
+                    role="list"
+                    tabindex="-1"
+                  >
+                    {%- for childlink in link.links -%}
+                      <li
+                        class="menu-drawer__list-item"
+                        style="--menu-drawer-animation-index: {{ animation_index }};"
+                      >
+                        <a
+                          href="{{ childlink.url }}"
+                          class="menu-drawer__menu-item menu-drawer__menu-item--child menu-drawer__animated-element{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
+                          {% if childlink.current %}
+                            aria-current="page"
+                          {% endif %}
+                        >
+                          {% if render_link_image %}
+                            {% render 'link-featured-image',
+                              link: childlink,
+                              class: 'menu-drawer__link-image',
+                              sizes: 'auto, 400px'
+                            %}
+                          {% endif %}
+                          <span class="menu-drawer__menu-item-text wrap-text">{{ childlink.title | escape }}</span>
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {% else %}
+                  {%- comment -%}
+                    Simple links for links with no children (regardless of accordion setting), in menus with fewer than 3 levels of links
+                  {%- endcomment -%}
+                  <a
+                    id="HeaderDrawer-{{ link.handle }}"
+                    href="{{ link.url }}"
+                    class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element"
+                    {% if link.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                  </a>
+                {% endif %}
+              </li>
+            {%- endfor -%}
+          {% else %}
+            {%- comment -%}
+              Handle menus with 3 levels of links
+            {%- endcomment -%}
+            {% assign animation_index = 0 %}
+            {%- for link in linklist.links -%}
+              {% assign animation_index = animation_index | plus: 1 %}
+              <li
+                class="menu-drawer__list-item"
+                style="--menu-drawer-animation-index: {{ animation_index }};"
+              >
+                {%- if link.links != blank -%}
+                  {%- comment -%}
+                    Regardless of the Accordion setting, in menus with 3 levels of links, we use a details element to handle the top level of the menu for links that have children.
+                  {%- endcomment -%}
+                  <details
+                    id="Details-menu-drawer-menu-item-{{ forloop.index }}"
+                    class="menu-drawer__menu-container{% if block_settings.drawer_dividers %} menu-drawer__menu-container--divider{% endif %}"
+                  >
+                    <summary
+                      id="HeaderDrawer-{{ link.handle }}"
+                      class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element{% if link.child_active %} menu-drawer__menu-item--active{% endif %}"
+                      on:click="header-drawer/open/submenu"
+                    >
+                      <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                      <span class="svg-wrapper icon-caret icon-caret--forward">
+                        {{- 'icon-caret.svg' | inline_asset_content -}}
+                      </span>
+                    </summary>
+                    <div
+                      id="link-{{ link.handle | escape }}"
+                      class="menu-drawer__submenu has-submenu"
+                      tabindex="-1"
+                      style="--menu-drawer-animation-index: {{ animation_index }};"
+                    >
+                      <div class="menu-drawer__inner-submenu">
+                        <div class="menu-drawer__nav-buttons menu-drawer__nav-buttons--with-title">
+                          <button
+                            class="button menu-drawer__back-button focus-inset"
+                            on:click="header-drawer/back"
+                            aria-label="{{ 'actions.back_to_main_menu' | t }}"
+                          >
+                            <span class="svg-wrapper icon-caret icon-caret--backward">
+                              {{- 'icon-caret.svg' | inline_asset_content -}}
+                            </span>
+                          </button>
+                          <a
+                            href="{{ link.url }}"
+                            class="menu-drawer__title focus-inset"
+                            {% if link.current %}
+                              aria-current="page"
+                            {% endif %}
+                          >
+                            <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                          </a>
+                          <button
+                            class="button button-unstyled close-button menu-drawer__close-button focus-inset"
+                            type="button"
+                            aria-label="{{ 'actions.close' | t }}"
+                            on:click="header-drawer/close"
+                          >
+                            <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+                              {{- 'icon-close-menu.svg' | inline_asset_content -}}
+                            </span>
+                          </button>
+                        </div>
+                        {% liquid
+                          assign render_link_image = false
+                          if block_settings.menu_style == 'collection_images'
+                            assign catalog_links = link.links | where: 'type', 'catalog_link'
+                            assign collection_list_links = link.links | where: 'type', 'collections_link'
+                            assign collection_links = link.links | where: 'type', 'collection_link'
+                            if catalog_links.size > 0 or collection_list_links.size > 0 or collection_links.size > 0
+                              assign render_link_image = true
+                            endif
+                          endif
+                        %}
+                        <ul
+                          class="menu-drawer__menu menu-drawer__menu--childlist{% if render_link_image and link.levels == 1 %} menu-drawer__menu--grid{% endif %}"
+                          role="list"
+                          tabindex="-1"
+                        >
+                          {% assign first_accordion_open = false -%}
+                          {%- for childlink in link.links -%}
+                            <li
+                              class="
+                                menu-drawer__list-item
+                                {% if childlink.links != blank -%}
+                                  {% if block_settings.drawer_accordion -%} menu-drawer__list-item--deep{% else -%} menu-drawer__list-item--flat{%- endif -%}
+                                {%- endif -%}
+                                {% if block_settings.drawer_dividers %} menu-drawer__list-item--divider{% endif %}
+                              "
+                            >
+                              {%- if childlink.links == blank -%}
+                                {%- comment -%}
+                                  Simple links for links with no children (regardless of accordion setting), in menus with 3 levels of links
+                                  This link is currently using --parent class style but --child would match the pattern on desktop
+                                {%- endcomment -%}
+                                <a
+                                  id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
+                                  href="{{ childlink.url }}"
+                                  class="menu-drawer__menu-item menu-drawer__menu-item--parent{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                  {% if childlink.current %}
+                                    aria-current="page"
+                                  {% endif %}
+                                >
+                                  {% if render_link_image and link.levels == 1 %}
+                                    {% render 'link-featured-image',
+                                      link: childlink,
+                                      class: 'menu-drawer__link-image',
+                                      sizes: 'auto, 400px'
+                                    %}
+                                  {% endif %}
+                                  <span class="menu-drawer__menu-item-text wrap-text">
+                                    {{- childlink.title | escape -}}
+                                  </span>
+                                </a>
+                              {%- else -%}
+                                {% liquid
+                                  assign should_open_first_nested = false
+                                  if first_accordion_open == false and block_settings.drawer_accordion and block_settings.drawer_accordion_expand_first
+                                    assign first_accordion_open = true
+                                    assign should_open_first_nested = true
+                                  endif
+                                %}
+                                {% if block_settings.drawer_accordion %}
+                                  {%- comment -%}
+                                    Accordion for links with children, in menus with 3 levels of links
+                                  {%- endcomment -%}
+                                  {% capture accordion_children_nested %}
+                                    <details
+                                      id="Details-menu-drawer-{{ link.handle }}-{{ childlink.handle }}"
+                                    >
+                                      <summary
+                                        id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
+                                        class="menu-drawer__menu-item menu-drawer__menu-item--parent"
+                                      >
+                                        <span class="menu-drawer__menu-item-text wrap-text">
+                                          {{- childlink.title | escape -}}
+                                        </span>
+                                        <span class="svg-wrapper icon-plus">
+                                          {{- 'icon-plus.svg' | inline_asset_content -}}
+                                        </span>
+                                      </summary>
+                                      {% liquid
+                                        assign render_link_image = false
+                                        if block_settings.menu_style == 'collection_images'
+                                          assign catalog_links = childlink.links | where: 'type', 'catalog_link'
+                                          assign collection_list_links = childlink.links | where: 'type', 'collections_link'
+                                          assign collection_links = childlink.links | where: 'type', 'collection_link'
+                                          if catalog_links.size > 0 or collection_list_links.size > 0 or collection_links.size > 0
+                                            assign render_link_image = true
+                                          endif
+                                        endif
+                                      %}
+                                      <ul
+                                        class="menu-drawer__menu menu-drawer__menu--grandchildlist details-content{% if render_link_image %} menu-drawer__menu--grid{% endif %}"
+                                        role="list"
+                                        tabindex="-1"
+                                      >
+                                        {%- for grandchildlink in childlink.links -%}
+                                          <li
+                                            class="menu-drawer__list-item"
+                                            style="--menu-drawer-animation-index: {{ forloop.index }};"
+                                          >
+                                            <a
+                                              id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                              href="{{ grandchildlink.url }}"
+                                              class="menu-drawer__menu-item menu-drawer__menu-item--child{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                              {% if grandchildlink.current %}
+                                                aria-current="page"
+                                              {% endif %}
+                                            >
+                                              {% if render_link_image %}
+                                                {% render 'link-featured-image',
+                                                  link: grandchildlink,
+                                                  class: 'menu-drawer__link-image',
+                                                  sizes: 'auto, 400px'
+                                                %}
+                                              {% endif %}
+                                              <span class="menu-drawer__menu-item-text wrap-text">
+                                                {{- grandchildlink.title | escape -}}
+                                              </span>
+                                            </a>
+                                          </li>
+                                        {%- endfor -%}
+                                      </ul>
+                                    </details>
+                                  {% endcapture %}
+                                  {% render 'accordion-custom-component',
+                                    children: accordion_children_nested,
+                                    open_by_default_on_mobile: should_open_first_nested
+                                  %}
+                                {% else %}
+                                  {%- comment -%}
+                                    Flat menus for links with children, in menus with 3 levels of links
+                                  {%- endcomment -%}
+                                  <a
+                                    id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}"
+                                    href="{{ childlink.url }}"
+                                    class="menu-drawer__menu-item menu-drawer__menu-item--parent{% if childlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                    {% if childlink.current %}
+                                      aria-current="page"
+                                    {% endif %}
+                                  >
+                                    <span class="menu-drawer__menu-item-text wrap-text">
+                                      {{- childlink.title | escape -}}
+                                    </span>
+                                  </a>
+                                  {% liquid
+                                    assign render_link_image = false
+                                    if block_settings.menu_style == 'collection_images'
+                                      assign catalog_links = childlink.links | where: 'type', 'catalog_link'
+                                      assign collection_list_links = childlink.links | where: 'type', 'collections_link'
+                                      assign collection_links = childlink.links | where: 'type', 'collection_link'
+                                      if catalog_links.size > 0 or collection_list_links.size > 0 or collection_links.size > 0
+                                        assign render_link_image = true
+                                      endif
+                                    endif
+                                  %}
+                                  <ul
+                                    class="menu-drawer__menu menu-drawer__menu--grandchildlist details-content{% if render_link_image %} menu-drawer__menu--grid{% endif %}"
+                                    role="list"
+                                    tabindex="-1"
+                                  >
+                                    {%- for grandchildlink in childlink.links -%}
+                                      <li
+                                        class="menu-drawer__list-item"
+                                        style="--menu-drawer-animation-index: {{ forloop.index }};"
+                                      >
+                                        <a
+                                          id="HeaderDrawer-{{ link.handle }}-{{ childlink.handle }}-{{ grandchildlink.handle }}"
+                                          href="{{ grandchildlink.url }}"
+                                          class="menu-drawer__menu-item menu-drawer__menu-item--child{% if grandchildlink.current %} menu-drawer__menu-item--active{% endif %}"
+                                          {% if grandchildlink.current %}
+                                            aria-current="page"
+                                          {% endif %}
+                                        >
+                                          {% if render_link_image %}
+                                            {% render 'link-featured-image',
+                                              link: grandchildlink,
+                                              class: 'menu-drawer__link-image',
+                                              sizes: 'auto, 400px'
+                                            %}
+                                          {% endif %}
+                                          <span class="menu-drawer__menu-item-text wrap-text">
+                                            {{- grandchildlink.title | escape -}}
+                                          </span>
+                                        </a>
+                                      </li>
+                                    {%- endfor -%}
+                                  </ul>
+                                {%- endif -%}
+                              {%- endif -%}
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                        {% liquid
+                          if eager_loading
+                            if block_settings.menu_style == 'featured_collections'
+                              assign featured_collections = link.links | where: 'type', 'collection_link'
+                            endif
+
+                            if block_settings.menu_style == 'featured_products'
+                              assign collection_linklist = link.links | where: 'type', 'collection_link' | first
+                              assign featured_products_collection = collection_linklist.object
+                            endif
+                          else
+                            assign featured_collections = null | sort
+                            assign featured_products_collection = null | sort
+                          endif
+                        -%}
+
+                        {% if featured_collections.size > 0 or featured_products_collection.products_count > 0 %}
+                          <div
+                            class="menu-drawer__featured-content menu-drawer__featured-content--childlist"
+                            style="--menu-drawer-animation-index: {{ linklist.links.size | plus: 1 }};"
+                          >
+                            <ul class="menu-drawer__featured-content-list list-unstyled">
+                              {% if featured_collections.size > 0 %}
+                                {%- for collection in featured_collections limit: max_featured_items -%}
+                                  <li class="menu-drawer__featured-content-list-item menu-drawer__featured-content-list-item--collection">
+                                    {% render 'resource-card',
+                                      resource: collection.object,
+                                      resource_type: 'collection',
+                                      style: 'overlay',
+                                      image_aspect_ratio: ratio,
+                                      image_sizes: 'auto, 400px'
+                                    %}
+                                  </li>
+                                {%- endfor -%}
+                              {% else %}
+                                {% paginate featured_products_collection.products by max_featured_items %}
+                                  {%- for product in featured_products_collection.products limit: max_featured_items -%}
+                                    {% assign ozran_gender_menu = false %}
+                                    {% if link.title == 'Homme' or link.title == 'Femme' or link.title == 'HOMME' or link.title == 'FEMME' %}{% assign ozran_gender_menu = true %}{% endif %}
+                                    {% assign ozran_edition_product = false %}
+                                    {% if product.handle contains 'nexus' or product.handle contains 'eclipse' %}{% assign ozran_edition_product = true %}{% endif %}
+                                    {% unless ozran_gender_menu and ozran_edition_product %}
+
+                                    <li class="menu-drawer__featured-content-list-item menu-drawer__featured-content-list-item--product">
+                                      {% render 'resource-card',
+                                        resource: product,
+                                        resource_type: 'product',
+                                        image_aspect_ratio: ratio,
+                                        image_sizes: 'auto, 400px',
+                                        product_view_context: 'dialog'
+                                      %}
+                                    </li>
+                                    {% endunless %}
+                                  {%- endfor -%}
+                                {% endpaginate %}
+                              {% endif %}
+                            </ul>
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </details>
+                {%- else -%}
+                  {%- comment -%}
+                    Simple links for links with no children (regardless of accordion setting), in menus with 3 levels of links
+                  {%- endcomment -%}
+                  <a
+                    id="HeaderDrawer-{{ link.handle }}"
+                    href="{{ link.url }}"
+                    class="menu-drawer__menu-item menu-drawer__menu-item--mainlist menu-drawer__animated-element"
+                    {% if link.current %}
+                      aria-current="page"
+                    {% endif %}
+                  >
+                    <span class="menu-drawer__menu-item-text wrap-text">{{ link.title | escape }}</span>
+                  </a>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          {% endif %}
+        </ul>
+      </nav>
+      <div
+        class="menu-drawer__utility-links menu-drawer__animated-element"
+        style="--menu-drawer-animation-index: {{ linklist.links.size }};"
+      >
+        {% liquid
+          assign show_language = section.settings.show_language
+          if localization.available_languages.size <= 1
+            assign show_language = false
+          endif
+
+          assign show_country = section.settings.show_country
+          if localization.available_countries.size <= 1
+            assign show_country = false
+          endif
+        %}
+        {% if data_header_drawer_type == 'mobile-drawer' and show_country or show_language %}
+          {% liquid
+            assign background_brightness = block_settings.background_color | color_brightness
+            if background_brightness < 64
+              assign flag_shadow_size = 4
+            else
+              assign flag_shadow_size = 2
+            endif
+
+            assign localization_font = '--menu-localization-font: var(--font-[localization_font]--family); ' | replace: '[localization_font]', section.settings.localization_font
+            assign color_shadow = '--color-shadow: rgb(var(--color-foreground-rgb) / var(--opacity-10-25));'
+            assign form_style = localization_font | append: color_shadow
+          %}
+          {% if show_language and show_country == false %}
+            <div class="menu-drawer__localization color-custom-popover">
+              {% render 'localization-form',
+                show_country: show_country,
+                show_language: show_language,
+                localization_style: 'drawer',
+                form_style: form_style,
+                form_id: block.id
+              %}
+            </div>
+          {% else %}
+            <drawer-localization-component class="menu-drawer__localization">
+              <details
+                id="drawer-localization"
+                class="drawer-localization"
+                on:toggle="/toggle"
+              >
+                <summary
+                  id="HeaderDrawer-localization"
+                  class="drawer-localization__button h3 focus-inset"
+                  aria-expanded="false"
+                  on:click="header-drawer/open/submenu"
+                  style="{{ form_style }}"
+                >
+                  <div class="drawer-localization__button--label h6">
+                    {%- if show_country -%}
+                      <div class="mobile-localization mobile-localization--country">
+                        {%- if section.settings.country_selector_style == true -%}
+                          <span
+                            class="icon-flag"
+                            style="
+                              background-image: url({{- localization.country | image_url: width: 32 }});
+                              --size-shadow: {{ flag_shadow_size }}px;
+                              --color-shadow: rgb(var(--color-foreground-rgb) / var(--opacity-30-60));
+                            "
+                          ></span>
+                        {%- endif -%}
+                        <span class="currency-code">
+                          {{- localization.country.currency.iso_code -}}
+                        </span>
+                      </div>
+                    {%- endif -%}
+
+                    {%- if show_country and show_language -%}
+                      <span>/</span>
+                    {%- endif -%}
+
+                    {%- if show_language -%}
+                      <div class="mobile-localization mobile-localization--country">
+                        <span>
+                          {{ localization.language.iso_code | upcase }}
+                        </span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                  <span class="svg-wrapper icon-caret icon-caret--forward">
+                    {{- 'icon-caret.svg' | inline_asset_content -}}
+                  </span>
+                </summary>
+
+                <div
+                  class="menu-drawer__submenu has-submenu color-custom-drawer"
+                >
+                  <div
+                    class="menu-drawer__nav-buttons menu-drawer__nav-buttons--with-title"
+                    ref="navButtons"
+                  >
+                    <button
+                      class="button menu-drawer__back-button focus-inset"
+                      on:click="header-drawer/back"
+                      aria-label="{{ 'actions.back_to_main_menu' | t }}"
+                    >
+                      <span class="svg-wrapper icon-caret icon-caret--backward">
+                        {{- 'icon-caret.svg' | inline_asset_content -}}
+                      </span>
+                    </button>
+                    <span class="menu-drawer__title">
+                      {{- 'content.localization_region_and_language' | t -}}
+                    </span>
+                    <button
+                      class="button close-button menu-drawer__close-button focus-inset"
+                      type="button"
+                      aria-label="{{ 'actions.close' | t }}"
+                      on:click="header-drawer/close"
+                    >
+                      <span class="svg-wrapper header-drawer-icon header-drawer-icon--close">
+                        {{- 'icon-close-menu.svg' | inline_asset_content -}}
+                      </span>
+                    </button>
+                  </div>
+
+                  {% render 'localization-form',
+                    show_country: show_country,
+                    show_language: show_language,
+                    localization_style: 'drawer',
+                    form_style: form_style,
+                    form_id: block.id
+                  %}
+                </div>
+              </details>
+            </drawer-localization-component>
+          {% endif %}
+        {%- endif -%}
+      </div>
+
+      {% liquid
+        if block_settings.menu_style == 'featured_collections'
+          assign top_level_featured_collections = linklist.links | where: 'type', 'collection_link'
+        endif
+
+        if eager_loading and block_settings.menu_style == 'featured_products'
+          for link in linklist.links
+            if link.type == 'collection_link'
+              assign collection_linklist = link
+              assign top_level_featured_products_collection = collection_linklist.object
+              break
+            elsif link.type == 'catalog_link' or link.type == 'collections_link'
+              assign top_level_featured_products_collection = collections.all
+              break
+            endif
+          endfor
+        endif
+      -%}
+      {% if top_level_featured_collections.size > 0 or top_level_featured_products_collection.products_count > 0 %}
+        <div
+          class="menu-drawer__featured-content"
+          style="--menu-drawer-animation-index: {{ linklist.links.size | plus: 1 }};"
+        >
+          <ul class="menu-drawer__featured-content-list menu-drawer__animated-element list-unstyled">
+            {% if top_level_featured_collections.size > 0 %}
+              {%- for collection in top_level_featured_collections limit: max_featured_items -%}
+                <li class="menu-drawer__featured-content-list-item menu-drawer__featured-content-list-item--collection">
+                  {% render 'resource-card',
+                    resource: collection.object,
+                    resource_type: 'collection',
+                    style: 'overlay',
+                    image_aspect_ratio: ratio,
+                    image_sizes: 'auto, 400px'
+                  %}
+                </li>
+              {%- endfor -%}
+            {% elsif top_level_featured_products_collection.products_count > 0 %}
+              {% paginate top_level_featured_products_collection.products by max_featured_items %}
+                {%- for product in top_level_featured_products_collection.products limit: max_featured_items -%}
+                  <li class="menu-drawer__featured-content-list-item menu-drawer__featured-content-list-item--product">
+                    {% render 'resource-card',
+                      resource: product,
+                      resource_type: 'product',
+                      image_aspect_ratio: ratio,
+                      image_sizes: 'auto, 400px',
+                      product_view_context: 'dialog'
+                    %}
+                  </li>
+                {%- endfor -%}
+              {% endpaginate %}
+            {% endif %}
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+    <div
+      class="menu-drawer__backdrop"
+      on:click="header-drawer/close"
+    ></div>
+  </details>
+</header-drawer>
+
+{% stylesheet %}
+  .icon-caret--forward svg {
+    transform: rotate(-90deg);
+  }
+
+  .icon-caret--backward svg {
+    transform: rotate(90deg);
+  }
+
+  /* Forward/backward carets follow reading direction */
+  [dir='rtl'] .icon-caret--forward svg {
+    transform: rotate(90deg);
+  }
+
+  [dir='rtl'] .icon-caret--backward svg {
+    transform: rotate(-90deg);
+  }
+
+  .header__icon--menu {
+    position: initial;
+  }
+
+  .menu-drawer-container .header__icon--summary {
+    color: var(--color-foreground);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: var(--padding-lg);
+  }
+
+  .header__icon--summary .header-drawer-icon {
+    margin: auto;
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .menu-drawer__featured-content {
+    z-index: var(--layer-base);
+    container-type: inline-size;
+  }
+
+  .menu-drawer__featured-content--childlist {
+    z-index: var(--layer-flat);
+  }
+
+  .menu-drawer__featured-content-list {
+    display: flex;
+    gap: 1em;
+    overflow-x: auto;
+    padding-block-end: var(--padding-lg);
+  }
+
+  .menu-drawer__featured-content-list-item {
+    flex: 0 0 auto;
+  }
+
+  .menu-drawer__featured-content-list-item--product {
+    width: 35cqi;
+  }
+
+  .menu-drawer__featured-content-list-item--collection img.resource-card__image {
+    width: 80cqi;
+  }
+
+  .menu-drawer__featured-content-list-item:first-child {
+    margin-inline-start: var(--margin-xl);
+  }
+
+  .menu-drawer__featured-content-list-item:last-child {
+    margin-inline-end: var(--margin-xl);
+  }
+
+  .menu-drawer__navigation {
+    padding: 0;
+
+    @media screen and (min-width: 750px) {
+      margin-top: var(--drawer-header-desktop-top);
+    }
+  }
+
+  details:not(.menu-open) .header__icon--menu .header-drawer-icon--close {
+    display: none;
+  }
+
+  details.menu-open .header__icon--menu .header-drawer-icon--close {
+    @media screen and (min-width: 750px) {
+      display: none;
+    }
+  }
+
+  details.menu-open .header__icon--menu .header-drawer-icon--open {
+    display: none;
+
+    @media screen and (min-width: 750px) {
+      display: flex;
+    }
+  }
+
+  .menu-drawer {
+    position: fixed;
+    transform: translateX(-100%);
+    visibility: hidden;
+    height: var(--drawer-height);
+    width: var(--drawer-width);
+    max-width: var(--drawer-max-width);
+    z-index: var(--layer-menu-drawer);
+    inset-inline-start: 0;
+    top: 0;
+
+    /* Inline-start-anchored drawer spans the full physical viewport (viewport-fit=cover); keep its
+       content clear of the status bar, side notch, and home indicator. Subtract the
+       designed menu gutter so link text aligns with the page / hamburger, not inset twice. */
+    padding-block: var(--safe-area-inset-top) var(--safe-area-inset-bottom);
+    padding-inline: max(0px, calc(var(--safe-area-inset-left) - var(--drawer-padding))) 0;
+    background-color: var(--color-background);
+    overflow: auto;
+    display: flex;
+    border-inline-end: var(--style-border-drawer);
+    flex-direction: column;
+
+    @media screen and (min-width: 750px) {
+      width: 25rem;
+    }
+  }
+
+  /* The drawer enters from the inline-start edge: the slide transforms and the
+     physical safe-area notch flip in RTL */
+  [dir='rtl'] .menu-drawer {
+    transform: translateX(100%);
+    padding-inline-start: max(0px, calc(var(--safe-area-inset-right) - var(--drawer-padding)));
+  }
+
+  /* When opening a submenu we don't want the first-level menu to be scrollable, so we reset the overflow  */
+  .menu-drawer.menu-drawer--has-submenu-opened {
+    overflow: initial;
+  }
+
+  .menu-drawer__backdrop {
+    position: fixed;
+    top: 0;
+    inset-inline-start: 0;
+    width: 100vw;
+    height: 100dvh;
+    backdrop-filter: brightness(0.75);
+    z-index: var(--layer-overlay);
+    opacity: 0;
+    transition: opacity var(--drawer-animation-speed) ease;
+
+    .menu-open & {
+      opacity: 1;
+    }
+  }
+
+  .menu-drawer,
+  details[open] > .menu-drawer__submenu {
+    transition: transform var(--drawer-animation-speed) ease, visibility var(--drawer-animation-speed) ease,
+      opacity var(--drawer-animation-speed) ease;
+  }
+
+  .menu-open > .menu-drawer,
+  .menu-open > .menu-drawer__submenu:not(.menu-drawer__menu--childlist) {
+    transform: translateX(0);
+    visibility: visible;
+    opacity: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .menu-drawer__inner-container {
+    position: relative;
+    height: 100%;
+  }
+
+  .menu-drawer__navigation-container {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    align-content: space-between;
+    overflow-y: auto;
+    height: 100%;
+  }
+
+  .menu-drawer__inner-submenu {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+
+    @media screen and (min-width: 750px) {
+      margin-top: var(--drawer-header-desktop-top);
+    }
+  }
+
+  .menu-drawer__nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* Submenu header with a centered, clickable title flanked by the back and
+     close controls. */
+  .menu-drawer__nav-buttons--with-title {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .menu-drawer__title {
+    justify-self: center;
+    min-width: 0;
+    padding: var(--padding-md) var(--padding-sm);
+    color: var(--color-foreground);
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.2;
+  }
+
+  .menu-drawer__menu {
+    --menu-drawer-inline-padding: calc(var(--padding-sm) + 7px);
+
+    list-style: none;
+    padding-inline: var(--drawer-padding);
+    margin-inline: 0;
+    margin-block-start: 0;
+  }
+
+  .menu-drawer__menu--grid {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--padding-sm);
+    padding-inline-end: var(--menu-drawer-inline-padding);
+    padding-block-start: var(--padding-xs);
+  }
+
+  .menu-drawer__menu--childlist:not(.menu-drawer__menu--grid) {
+    flex-grow: 1;
+  }
+
+  .menu-drawer__menu.has-submenu,
+  .menu-drawer__menu--childlist:not(:has(.menu-drawer__animated-element)) {
+    margin-block-end: var(--margin-xs);
+
+    @media screen and (min-width: 750px) {
+      margin-block-end: 2.5rem;
+    }
+  }
+
+  .menu-drawer__list-item--divider {
+    border-block-end: 1px solid var(--drawer-divider-color, var(--color-border));
+  }
+
+  .menu-drawer__list-item--deep:not(.menu-drawer__list-item--divider) .menu-drawer__menu {
+    margin-block-start: -0.3rem;
+  }
+
+  .menu-drawer__list-item--flat.menu-drawer__list-item--divider .menu-drawer__menu {
+    margin-block-start: -0.4rem;
+  }
+
+  .menu-drawer__menu-container--divider {
+    border-block-end: 1px solid var(--drawer-divider-color, var(--color-border));
+  }
+
+  .menu-drawer__menu > .menu-drawer__list-item {
+    display: flex;
+    min-height: calc(2 * var(--padding-lg) + var(--icon-size-xs));
+  }
+
+  .menu-drawer__list-item--deep .menu-drawer__list-item,
+  .menu-drawer__list-item--flat .menu-drawer__list-item {
+    min-height: auto;
+  }
+
+  .menu-drawer__menu .menu-drawer__list-item--flat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-block-end: var(--margin-md);
+  }
+
+  .menu-drawer__menu--childlist .menu-drawer__list-item--flat {
+    margin-block-end: var(--margin-sm);
+
+    @media screen and (min-width: 750px) {
+      margin-block-end: var(--margin-lg);
+    }
+  }
+
+  .menu-drawer__menu--childlist .menu-drawer__list-item--flat.menu-drawer__list-item--divider {
+    margin-block-end: 0;
+  }
+
+  .menu-drawer__list-item--flat .menu-drawer__menu--childlist {
+    width: 100%;
+    padding-inline: 0;
+  }
+
+  .menu-drawer-container[open] .menu-drawer__animated-element {
+    animation: menu-drawer-nav-open var(--drawer-animation-speed) ease-in-out;
+    animation-delay: calc(var(--drawer-animation-speed) + (var(--menu-drawer-animation-index) - 1) * 0.1s);
+    animation-fill-mode: backwards;
+  }
+
+  [dir='rtl'] .menu-drawer-container[open] .menu-drawer__animated-element {
+    animation-name: menu-drawer-nav-open-rtl;
+  }
+
+  .menu-drawer__menu accordion-custom .details-content--no-animation {
+    animation: none;
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(0);
+    transition: none;
+  }
+
+  .menu-drawer__menu details,
+  .menu-drawer__menu-item,
+  .menu-drawer__menu accordion-custom {
+    width: 100%;
+  }
+
+  .menu-drawer__list-item--divider .menu-drawer__menu-item:not(.menu-drawer__menu-item--child) {
+    min-height: calc(2 * var(--padding-lg) + var(--icon-size-xs));
+  }
+
+  .menu-drawer__menu-item--mainlist {
+    min-height: calc(2 * var(--padding-lg) + var(--icon-size-xs));
+    font-family: var(--menu-top-level-font-family);
+    font-style: var(--menu-top-level-font-style);
+    font-weight: var(--menu-top-level-font-weight);
+    font-size: var(--menu-top-level-font-size);
+    line-height: var(--menu-top-level-font-line-height);
+    text-transform: var(--menu-top-level-font-case);
+    color: var(--menu-top-level-font-color);
+    justify-content: space-between;
+
+    &:hover {
+      color: var(--menu-top-level-font-color);
+    }
+  }
+
+  .menu-drawer__menu-item--parent {
+    font-family: var(--menu-parent-font-family);
+    font-style: var(--menu-parent-font-style);
+    font-weight: var(--menu-parent-font-weight);
+    font-size: var(--menu-parent-font-size);
+    line-height: var(--menu-parent-font-line-height);
+    text-transform: var(--menu-parent-font-case);
+    color: var(--menu-parent-font-color);
+
+    &:hover {
+      color: var(--menu-parent-font-color);
+    }
+  }
+
+  .menu-drawer__menu-item--child {
+    font-family: var(--menu-child-font-family);
+    font-style: var(--menu-child-font-style);
+    font-weight: var(--menu-child-font-weight);
+    font-size: var(--menu-child-font-size);
+    line-height: var(--menu-child-font-line-height);
+    text-transform: var(--menu-child-font-case);
+    color: var(--menu-child-font-color);
+
+    &:hover {
+      color: var(--menu-child-font-color);
+    }
+  }
+
+  .menu-drawer__menu--childlist summary.menu-drawer__menu-item {
+    display: flex;
+    width: 100%;
+    padding-inline-end: 0;
+  }
+
+  .menu-drawer__list-item--deep .menu-drawer__menu,
+  .menu-drawer__menu--grandchildlist {
+    padding-inline: 0;
+  }
+
+  .menu-drawer__list-item--deep .menu-drawer__menu {
+    padding-block-end: 0.5rem;
+  }
+
+  .menu-drawer__list-item--deep.menu-drawer__list-item--divider .menu-drawer__menu {
+    padding-block-end: 0.3rem;
+  }
+
+  .menu-drawer__list-item--flat.menu-drawer__list-item--divider .menu-drawer__menu--grandchildlist {
+    padding-block-end: 0.5rem;
+  }
+
+  .menu-drawer__menu-item {
+    display: flex;
+    padding: var(--padding-2xs) 0;
+    position: relative;
+    text-decoration: none;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu-drawer__menu-item:has(> .menu-drawer__link-image) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    row-gap: var(--padding-3xs);
+    padding: 0;
+  }
+
+  .menu-drawer__link-image {
+    width: 100%;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  /* Fix alignment for collection image mode links without images in drawer */
+
+  /* Target menu items in grids that have images */
+  .menu-drawer__menu--grid:has(.menu-drawer__link-image) .menu-drawer__menu-item:not(:has(> .menu-drawer__link-image)) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    row-gap: var(--padding-3xs);
+    padding: 0;
+  }
+
+  .menu-drawer__menu--grid:has(.menu-drawer__link-image)
+    .menu-drawer__menu-item:not(:has(> .menu-drawer__link-image))::before {
+    content: '';
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--color-foreground-muted);
+    opacity: 0.1;
+    border-radius: var(--menu-image-border-radius);
+  }
+
+  .menu-drawer__close-button {
+    position: relative;
+    inset-inline-end: auto;
+    top: auto;
+    width: fit-content;
+    height: fit-content;
+    color: inherit;
+    padding: var(--padding-lg);
+  }
+
+  /* Match the specificity of the base [dir='rtl'] .close-button safe-area rule so
+     the relatively positioned drawer button keeps inset-inline-end: auto in RTL */
+  [dir='rtl'] .menu-drawer__close-button {
+    inset-inline-end: auto;
+  }
+
+  .menu-drawer__back-button {
+    display: flex;
+    width: 100%;
+    padding: var(--padding-md) var(--padding-xl);
+    border: none;
+    align-items: center;
+    color: var(--color-foreground);
+    background-color: transparent;
+    text-align: start;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow-x: hidden;
+    line-height: 1.2;
+    box-shadow: none;
+  }
+
+  /* Match the menu links' focus style: a rectangular outline in the current color.
+     These buttons sit flush against the drawer edges, so inset the outline to keep
+     it from being clipped. */
+  .menu-drawer__close-button.menu-drawer__close-button,
+  .menu-drawer__back-button.menu-drawer__back-button {
+    border-radius: 0;
+    outline-offset: calc(var(--padding-2xs) * -1);
+  }
+
+  /* Safari < 16.4 draws the close focus ring via a pseudo-element; keep it
+     rectangular there too. */
+  .menu-drawer__close-button:focus-visible::after {
+    border-radius: 0;
+  }
+
+  .menu-drawer__nav-buttons--with-title .menu-drawer__back-button {
+    width: fit-content;
+    padding: var(--padding-lg);
+    justify-self: start;
+  }
+
+  .menu-drawer__nav-buttons--with-title .menu-drawer__close-button {
+    justify-self: end;
+  }
+
+  .menu-drawer__menu-item-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /** Styles when the country selector is hidden */
+  .menu-drawer .language-selector:not(.menu-drawer__submenu *) {
+    width: fit-content;
+    padding-inline-start: 0;
+
+    .localization-form__select {
+      text-align: start;
+    }
+  }
+
+  .menu-drawer__menu-item > .svg-wrapper {
+    width: fit-content;
+    height: fit-content;
+    margin: 0;
+    padding-block: var(--padding-lg);
+    padding-inline-start: var(--padding-xl);
+    flex-shrink: 0;
+  }
+
+  .menu-drawer__list-item--divider .menu-drawer__menu-item > .svg-wrapper {
+    padding-block: var(--padding-md);
+  }
+
+  .menu-drawer svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .menu-drawer__submenu {
+    position: absolute;
+    width: 100%;
+    top: 0;
+    height: 100dvh;
+    inset-inline-start: 0;
+
+    /* Submenus are absolutely positioned so they bypass the drawer's safe-area padding;
+       apply the same insets directly */
+    padding-block: var(--safe-area-inset-top) var(--safe-area-inset-bottom);
+    padding-inline: max(0px, calc(var(--safe-area-inset-left) - var(--drawer-padding))) 0;
+    background-color: var(--color-background);
+    z-index: var(--layer-flat);
+    transform: translateX(-5%);
+    visibility: hidden;
+    overflow-y: auto;
+    opacity: 0;
+  }
+
+  [dir='rtl'] .menu-drawer__submenu {
+    transform: translateX(5%);
+    padding-inline-start: max(0px, calc(var(--safe-area-inset-right) - var(--drawer-padding)));
+  }
+
+  .menu-drawer__back-button > .svg-wrapper {
+    margin-inline-end: var(--padding-md);
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .menu-drawer__utility-links {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin-block: auto var(--padding-sm);
+    margin-inline-start: var(--padding-xl);
+  }
+
+  .menu-drawer__account {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    text-decoration: none;
+    height: 44px;
+    font-size: 1.4rem;
+    color: rgb(var(--color-foreground));
+  }
+
+  .menu-drawer__account svg {
+    height: var(--icon-size-sm);
+    width: var(--icon-size-sm);
+  }
+
+  .menu-drawer__account shop-user-avatar {
+    --shop-avatar-size: 2.4rem;
+
+    margin-inline-end: 0.55rem;
+    margin-inline-start: -0.45rem;
+  }
+
+  .menu-drawer__link-image,
+  .menu-drawer__featured-product-image,
+  .menu-drawer__featured-collection-image,
+  .menu-drawer__featured-collection-link::before {
+    border-radius: var(--menu-image-border-radius);
+  }
+
+  @keyframes menu-drawer-nav-open {
+    0% {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateX(-0.5rem);
+    }
+
+    100% {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes menu-drawer-nav-open-rtl {
+    0% {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateX(0.5rem);
+    }
+
+    100% {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes menu-drawer-subnav-open {
+    0% {
+      visibility: visible;
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    100% {
+      visibility: hidden;
+      opacity: 0;
+      transform: translateX(-1rem);
+    }
+  }
+
+  /* Drawer Localization Styles */
+  .drawer-localization__button .icon-flag {
+    width: var(--menu-localization-font-size, var(--icon-size-sm));
+    height: var(--menu-localization-font-size, var(--icon-size-sm));
+    clip-path: circle(50%); /* stylelint-disable-line */
+    background-position: center;
+    background-size: cover;
+    margin-inline-end: 4px;
+    position: relative;
+  }
+
+  .drawer-localization__button .icon-flag::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: inset 0 0 var(--size-shadow) var(--color-shadow);
+    border-radius: 50%;
+  }
+
+  .drawer-localization .country-filter {
+    padding-block: 8px;
+  }
+
+  .drawer-localization .drawer-localization__button {
+    display: flex;
+    padding: 0;
+    position: relative;
+    text-decoration: none;
+    height: 44px;
+
+    &:hover {
+      color: var(--color-foreground);
+    }
+  }
+
+  .drawer-localization .drawer-localization__button .icon-caret {
+    width: fit-content;
+    height: fit-content;
+    margin: 0;
+    padding-block: var(--padding-xl);
+    padding-inline: var(--padding-xs) var(--padding-xl);
+  }
+
+  .menu-drawer__localization:not(drawer-localization-component) .language-selector {
+    font-family: var(--menu-localization-font);
+    font-size: var(--menu-localization-font-size);
+  }
+
+  .menu-drawer__localization .language-selector.h5 {
+    padding-inline-start: 0;
+  }
+
+  .drawer-localization {
+    display: contents;
+    color: var(--color-foreground);
+  }
+
+  .drawer-localization localization-form-component {
+    position: relative;
+    height: 100%;
+  }
+
+  .drawer-localization .mobile-localization,
+  .drawer-localization .drawer-localization__button--label {
+    display: flex;
+    gap: var(--gap-xs);
+    margin-block: 0;
+    align-items: center;
+  }
+
+  .drawer-localization__button--label.h6 {
+    font-family: var(--menu-localization-font);
+  }
+
+  .drawer-localization img {
+    width: var(--icon-size-sm);
+  }
+
+  .drawer-localization .localization-button__icon,
+  .drawer-localization .localization-button__icon svg {
+    width: var(--icon-size-xs);
+    height: var(--icon-size-xs);
+  }
+
+  .drawer-localization summary.is-disabled {
+    pointer-events: none;
+  }
+
+  .drawer-localization .localization-wrapper {
+    width: 100%;
+  }
+
+  .drawer-localization .localization-form {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .drawer-localization .localization-form > * {
+    padding-inline: var(--padding-xl);
+  }
+
+  .drawer-localization .language-selector .svg-wrapper.icon-caret {
+    transform: translateY(-50%) rotate(0deg);
+    inset-inline-end: 20px;
+  }
+
+  [dir='rtl'] .drawer-localization .language-selector .svg-wrapper.icon-caret {
+    right: auto; /* stylelint-disable-line csstools/use-logical -- clearing an un-converted physical right in RTL */
+  }
+
+  .drawer-localization .language-selector .svg-wrapper.icon-caret svg {
+    transform: none;
+  }
+
+  /* OZRAN — plein écran tactile (sans impact sur ordinateur) */
+  .ozran-mobile-nav { display: none; }
+  @media screen and (max-width: 749px) {
+    .header-drawer .menu-drawer {
+      width: 100vw;
+      max-width: none;
+      height: 100dvh;
+      inset-inline: 0;
+      padding: max(env(safe-area-inset-top), 12px) 0 max(env(safe-area-inset-bottom), 12px);
+      border: 0;
+      background: #0e0e0e;
+      color: #f5f2ed;
+      overflow: hidden;
+    }
+    .header-drawer .menu-drawer > .menu-drawer__navigation,
+    .header-drawer .menu-drawer > .menu-drawer__utility-links,
+    .header-drawer .menu-drawer > .menu-drawer__localization,
+    .header-drawer .menu-drawer > .menu-drawer__featured-content { display: none !important; }
+    .header-drawer .menu-drawer > .menu-drawer__close-button {
+      align-self: flex-end;
+      flex-shrink: 0;
+      color: #f5f2ed;
+      padding: 13px 23px;
+      min-height: 52px;
+      z-index: 2;
+    }
+    .header-drawer .ozran-mobile-nav {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      flex: 1;
+      padding: 8px 25px 0;
+    }
+    .ozran-mobile-nav__intro {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .28em;
+      padding: 6px 0 22px;
+      border-bottom: 1px solid #414141;
+    }
+    .ozran-mobile-nav__intro span { font-size: 10px; font-weight: 400; letter-spacing: .13em; color: #999; }
+    .ozran-mobile-nav__scroll {
+      flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 18px 0 35px;
+    }
+    .ozran-mobile-nav__scroll::-webkit-scrollbar { display: none; }
+    .ozran-mobile-nav__item { display: block; border-bottom: 1px solid #303030; }
+    .ozran-mobile-nav__heading {
+      display: flex; justify-content: space-between; align-items: center;
+      min-height: 72px; padding: 10px 2px;
+      color: #f5f2ed; text-decoration: none;
+      text-transform: uppercase; font-size: clamp(22px, 6.2vw, 31px);
+      letter-spacing: .065em; font-weight: 500; cursor: pointer;
+      list-style: none;
+    }
+    .ozran-mobile-nav__heading::-webkit-details-marker,
+    .ozran-mobile-nav__nested summary::-webkit-details-marker { display: none; }
+    .ozran-mobile-nav__plus { font-size: 25px; font-weight: 300; transition: transform .2s ease; }
+    .ozran-mobile-nav__item[open] > .ozran-mobile-nav__heading .ozran-mobile-nav__plus { transform: rotate(45deg); }
+    .ozran-mobile-nav__children { display: flex; flex-direction: column; padding: 0 0 16px 13px; }
+    .ozran-mobile-nav__children > a, .ozran-mobile-nav__nested > summary,
+    .ozran-mobile-nav__grandchildren > a {
+      display: flex; align-items: center; justify-content: space-between;
+      min-height: 47px; color: #c7c7c7; text-decoration: none;
+      font-size: 14px; letter-spacing: .085em; text-transform: uppercase; line-height: 1.4;
+    }
+    .ozran-mobile-nav__nested > summary { cursor: pointer; list-style: none; }
+    .ozran-mobile-nav__nested[open] > summary span:last-child { transform: rotate(45deg); }
+    .ozran-mobile-nav__grandchildren { display: flex; flex-direction: column; padding-left: 17px; }
+    .ozran-mobile-nav__grandchildren > a { color: #999; font-size: 12px; min-height: 40px; }
+    .ozran-mobile-nav__signature {
+      flex-shrink: 0; border-top: 1px solid #414141; padding: 17px 0 9px;
+      text-align: center; color: #8e8e8e; font-size: 10px; letter-spacing: .19em;
+    }
+  }
+
+  /* OZRAN mobile horizontal navigation layout */
+  @media screen and (max-width: 749px) {
+    .header-drawer .menu-drawer {padding: max(env(safe-area-inset-top), 4px) 0 max(env(safe-area-inset-bottom), 8px) !important;}
+    .header-drawer .menu-drawer > .menu-drawer__close-button {
+      position: absolute; left: 8px; right: auto; top: max(env(safe-area-inset-top), 4px);
+      width: 53px; height: 62px; padding: 15px; z-index: 4;
+    }
+    .header-drawer .ozran-mobile-nav { padding: 0; min-height: 0; }
+    .ozran-mobile-nav__top { flex: 0 0 67px; display:flex; justify-content:center; align-items:center; position:relative; padding:0 61px; }
+    .ozran-mobile-nav__brand { display:flex; align-items:center; justify-content:center; color:#f5f2ed; text-decoration:none; letter-spacing:.18em; font-size:25px; font-weight:400; height:62px; max-width:100%; }
+    .ozran-mobile-nav__brand img {display:block; max-width:145px; max-height:45px; width:auto; height:auto; object-fit:contain;}
+    .ozran-mobile-nav__cart { position:absolute; right:15px; top:0; width:49px; height:62px; color:#f5f2ed; display:flex; justify-content:center; align-items:center; }
+    .ozran-mobile-nav__tabs {flex:0 0 auto; display:flex; width:100%; overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; scrollbar-width:none; gap:27px; padding:0 21px; border-bottom:1px solid #333;}
+    .ozran-mobile-nav__tabs::-webkit-scrollbar{display:none;}
+    .ozran-mobile-nav__tab {flex:0 0 auto; min-height:60px; padding:15px 1px 12px; border:0; border-bottom:2px solid transparent; border-radius:0; outline-offset:-3px; background:transparent; color:#a8a8a8; font:inherit; font-size:12px; font-weight:500; letter-spacing:.065em; text-transform:uppercase; white-space:nowrap; cursor:pointer;}
+    .ozran-mobile-nav__tab.is-active {color:#fff; border-bottom-color:#fff;}
+    .ozran-mobile-nav__content {flex:1; min-height:0; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding:27px 24px 48px;}
+    .ozran-mobile-nav__panel[hidden]{display:none !important;}
+    .ozran-mobile-nav__panel {display:block;}
+    .ozran-mobile-nav__section-link, .ozran-mobile-nav__nested > summary {display:flex; width:100%; justify-content:space-between; align-items:center; min-height:65px; padding:12px 4px; font-size:17px; font-weight:400; letter-spacing:.025em; color:#f0f0f0; text-transform:none; text-decoration:none; border-bottom:1px solid #282828; cursor:pointer;}
+    .ozran-mobile-nav__nested > summary {list-style:none;}
+    .ozran-mobile-nav__nested > summary::-webkit-details-marker{display:none;}
+    .ozran-mobile-nav__section-link span, .ozran-mobile-nav__arrow{font-size:22px; color:#dadada; font-weight:300;}
+    .ozran-mobile-nav__nested[open] .ozran-mobile-nav__arrow{transform:rotate(45deg);}
+    .ozran-mobile-nav__grandchildren{display:flex; flex-direction:column; padding:8px 0 15px 17px;}
+    .ozran-mobile-nav__grandchildren > a{font-size:14px; color:#bcbcbc; text-decoration:none; padding:13px 3px;}
+    .ozran-mobile-nav__see-all{display:inline-block; margin:28px 4px; color:#a1a1a1; font-size:11px; letter-spacing:.09em; text-decoration:none; text-transform:uppercase;}
+  }
+
+  @media screen and (max-width: 749px) {
+    .header-drawer .menu-drawer > .menu-drawer__close-button,
+    .header-drawer .menu-drawer > .menu-drawer__close-button:focus,
+    .header-drawer .menu-drawer > .menu-drawer__close-button:active {
+      border: 0 !important; outline: none !important; box-shadow: none !important;
+      background: transparent !important; border-radius: 0 !important;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .header-drawer .menu-drawer > .menu-drawer__close-button:focus-visible {outline: 1px solid #aaa !important;outline-offset:-4px !important;}
+    .header-drawer .menu-drawer > .menu-drawer__close-button::after,
+    .header-drawer .menu-drawer > .menu-drawer__close-button::before {box-shadow:none !important;border:0 !important;}
+    .ozran-mobile-nav__cart-icon {display:flex;width:27px;height:27px;align-items:center;justify-content:center;}
+    .ozran-mobile-nav__cart-icon svg {width:27px !important;height:27px !important;display:block;}
+    .ozran-mobile-nav__section-link, .ozran-mobile-nav__nested > summary {
+      font-family: var(--font-heading--family, Georgia, serif) !important;
+      font-weight: 400 !important;
+      font-size: clamp(16px, 4.3vw, 18px) !important;
+      letter-spacing: .065em !important;
+      min-height: 64px !important;
+      border-bottom: 1px solid rgba(255,255,255,.13) !important;
+      padding-inline: 3px 6px !important;
+    }
+    .ozran-mobile-nav__grandchildren > a {font-family: var(--font-body--family, sans-serif);letter-spacing:.045em;font-size:14px;line-height:1.55;padding-block:15px;}
+    .ozran-mobile-nav__section-link span, .ozran-mobile-nav__nested .ozran-mobile-nav__arrow {font-family:var(--font-body--family,sans-serif);font-size:21px;color:#999;}
+    .ozran-mobile-nav__content {padding-top:31px !important;}
+  }
+
+  /* OZRAN mobile: match the banner's Oswald heading font */
+  @media screen and (max-width: 749px) {
+    .header-drawer .ozran-mobile-nav__section-link,
+    .header-drawer .ozran-mobile-nav__nested > summary,
+    .header-drawer .ozran-mobile-nav__grandchildren > a {
+      font-family: var(--font-heading--family), "Oswald", sans-serif !important;
+      font-weight: 100 !important;
+      font-style: normal;
+      letter-spacing: .035em !important;
+    }
+    .header-drawer .ozran-mobile-nav__section-link,
+    .header-drawer .ozran-mobile-nav__nested > summary {
+      font-size: 16px !important;
+      line-height: 1.5 !important;
+    }
+    .header-drawer .ozran-mobile-nav__grandchildren > a {font-size:14px !important;}
+  }
+
+  @media screen and (max-width: 749px) {
+    .ozran-mobile-nav__cart {right: 12px !important; width: 43px !important;}
+    .ozran-mobile-nav__account {position:absolute;right:54px;top:0;width:40px;height:62px;display:flex;align-items:center;justify-content:center;color:#f5f2ed;text-decoration:none;}
+    .ozran-mobile-nav__account svg {width:23px;height:23px;}
+  }
+  @media screen and (max-width: 749px) { .ozran-mobile-nav__tab--link {display:flex;align-items:center;text-decoration:none;min-height:60px;} }
+
+  @media screen and (max-width: 749px) {
+    .ozran-mobile-nav__cart {position:absolute;}
+    .ozran-mobile-nav__cart {isolation:isolate;overflow:visible;}
+    .ozran-cart-count {
+      position:absolute;right:-1px;top:4px;display:flex;align-items:center;justify-content:center;
+      min-width:16px;height:16px;padding:0 3px;border-radius:2px;
+      background:#f5f2ed;color:#0e0e0e;font:500 10px/1 var(--font-body--family,sans-serif);
+      letter-spacing:-.03em;pointer-events:none;z-index:2;
+    }
+    .ozran-cart-count.is-empty{display:none;}
+    .ozran-cart-orbit{
+      position:absolute;inset:8px 5px 8px 5px;border:1px solid rgba(245,242,237,.5);
+      border-radius:50%;transform:scale(.68) rotate(-35deg);opacity:0;pointer-events:none;
+    }
+    .ozran-cart-toast{
+      position:absolute;right:0;top:55px;padding:9px 12px;white-space:nowrap;display:flex;align-items:baseline;gap:7px;
+      background:#f5f2ed;color:#0e0e0e;border:1px solid #bbb9b4;
+      transform:translateY(-8px);opacity:0;visibility:hidden;pointer-events:none;
+      transition:transform .32s ease,opacity .32s ease,visibility .32s;z-index:12;
+      box-shadow:0 12px 22px rgba(0,0,0,.2);
+    }
+    .ozran-cart-toast strong{font:500 17px/1 var(--font-heading--family,sans-serif);letter-spacing:.02em;}
+    .ozran-cart-toast span{font:400 9px/1 var(--font-body--family,sans-serif);letter-spacing:.17em;}
+    .ozran-cart-toast.is-visible{transform:translateY(0);opacity:1;visibility:visible;}
+    .ozran-cart-activated .ozran-cart-orbit{animation:ozran-orbit-reveal 1s cubic-bezier(.2,.7,.2,1);}
+    .ozran-cart-count--pop{animation:ozran-count-flip .55s cubic-bezier(.2,.8,.2,1);}
+    @keyframes ozran-orbit-reveal{
+      0%{opacity:0;transform:scale(.65) rotate(-35deg);}
+      24%{opacity:.8;transform:scale(1) rotate(45deg);}
+      75%{opacity:.5;transform:scale(1.18) rotate(245deg);}
+      100%{opacity:0;transform:scale(1.32) rotate(330deg);}
+    }
+    @keyframes ozran-count-flip{
+      0%{transform:translateY(-5px);opacity:0;}
+      65%{transform:translateY(1px);opacity:1;}
+      100%{transform:translateY(0);}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .ozran-cart-activated .ozran-cart-orbit,.ozran-cart-count--pop{animation:none;}
+      .ozran-cart-toast{transition:none;}
+    }
+  }
+
+  /* OZRAN mobile cinematic fade — drawer stays fixed and fullscreen */
+  @media screen and (max-width: 749px) {
+    .header-drawer .menu-drawer {
+      transform: none !important;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .42s cubic-bezier(.22,1,.36,1), visibility .42s !important;
+    }
+    .header-drawer .menu-drawer-container.menu-open > .menu-drawer {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .header-drawer .ozran-mobile-nav__top,
+    .header-drawer .ozran-mobile-nav__tabs,
+    .header-drawer .ozran-mobile-nav__content {
+      opacity: 0;
+      transform: translateY(11px);
+      transition: opacity .48s cubic-bezier(.22,1,.36,1), transform .58s cubic-bezier(.22,1,.36,1);
+    }
+    .header-drawer .menu-open .ozran-mobile-nav__top {
+      opacity:1;transform:translateY(0);transition-delay:.07s;
+    }
+    .header-drawer .menu-open .ozran-mobile-nav__tabs {
+      opacity:1;transform:translateY(0);transition-delay:.13s;
+    }
+    .header-drawer .menu-open .ozran-mobile-nav__content {
+      opacity:1;transform:translateY(0);transition-delay:.2s;
+    }
+  }
+  @media screen and (max-width: 749px) and (prefers-reduced-motion: reduce) {
+    .header-drawer .menu-drawer,
+    .header-drawer .ozran-mobile-nav__top,
+    .header-drawer .ozran-mobile-nav__tabs,
+    .header-drawer .ozran-mobile-nav__content {
+      transition:none !important;transform:none !important;
+    }
+  }
+
+@media(max-width:749px){
+ .ozran-nexus-mobile .ozran-mobile-nav__grandchildren{opacity:0;transform:translateY(-7px);transition:opacity .32s ease,transform .38s cubic-bezier(.2,.7,.2,1);}
+ .ozran-nexus-mobile[open] .ozran-mobile-nav__grandchildren{opacity:1;transform:translateY(0);}
+ .ozran-nexus-mobile .ozran-mobile-nav__grandchildren a{display:block;}
+}
+@media(prefers-reduced-motion:reduce){.ozran-nexus-mobile .ozran-mobile-nav__grandchildren{transition:none!important;transform:none!important;}}
+
+  @media screen and (max-width:749px) {
+    .ozran-mobile-nav__section-link,
+    .ozran-mobile-nav__nested > summary,
+    .ozran-mobile-nav__grandchildren a,
+    .ozran-mobile-nav__see-all {
+      font-family:var(--font-heading--family),sans-serif !important;
+      font-weight:600 !important;
+      font-style:normal !important;
+    }
+  }
+{% endstylesheet %}

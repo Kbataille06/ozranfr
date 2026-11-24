@@ -1,0 +1,310 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero_jVaWmY": {
+      "type": "hero",
+      "blocks": {
+        "text_YLPk4p": {
+          "type": "text",
+          "settings": {
+            "text": "<p>L’IDENTITÉ AVANT LE NOM</p>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "custom",
+            "font": "var(--font-heading--family)",
+            "font_size": "clamp(2.25rem,5vw,5rem)",
+            "line_height": "tight",
+            "letter_spacing": "normal",
+            "case": "none",
+            "wrap": "balance",
+            "text_color": "#ffffff",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "text_ha3zpj": {
+          "type": "text",
+          "settings": {
+            "text": "<p>OZRAN</p><p>◇</p><p>Luxe streetwear. Une signature, une attitude.</p>",
+            "width": "100%",
+            "max_width": "normal",
+            "alignment": "center",
+            "type_preset": "custom",
+            "font": "var(--font-body--family)",
+            "font_size": "1rem",
+            "line_height": "normal",
+            "letter_spacing": "loose",
+            "case": "none",
+            "wrap": "pretty",
+            "text_color": "#ffffff",
+            "background": false,
+            "background_color": "#00000026",
+            "corner_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "button_H9gpTf": {
+          "type": "button",
+          "name": "t:names.button",
+          "settings": {
+            "label": "EXPLORER OZRAN",
+            "link": "shopify://collections/all",
+            "open_in_new_tab": false,
+            "style_class": "button-custom",
+            "custom_button_background": "rgba(0,0,0,0)",
+            "custom_button_text": "#ffffff",
+            "custom_button_border": "#ffffff",
+            "link_text_color": "",
+            "width": "fit-content",
+            "custom_width": 23,
+            "width_mobile": "fit-content",
+            "custom_width_mobile": 100
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "text_YLPk4p",
+        "text_ha3zpj",
+        "button_H9gpTf"
+      ],
+      "name": "t:names.hero",
+      "settings": {
+        "media_type_1": "image",
+        "image_1": "shopify://shop_images/ozran-hero-campaign.png",
+        "media_type_2": "image",
+        "stack_media_on_mobile": false,
+        "custom_mobile_media": false,
+        "media_type_1_mobile": "image",
+        "media_type_2_mobile": "image",
+        "link": "",
+        "open_in_new_tab": false,
+        "content_direction": "column",
+        "vertical_on_mobile": true,
+        "horizontal_alignment": "center",
+        "vertical_alignment": "center",
+        "align_baseline": false,
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 18,
+        "section_width": "full-width",
+        "section_height": "custom",
+        "section_height_custom": 100,
+        "background_color": "rgba(0,0,0,0)",
+        "toggle_overlay": true,
+        "overlay_color": "#07070754",
+        "overlay_style": "solid",
+        "gradient_direction": "to bottom",
+        "blurred_reflection": false,
+        "reflection_opacity": 75,
+        "padding-block-start": 84,
+        "padding-block-end": 84
+      }
+    },
+    "ozran_collection_001": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<style>.ozran-campaign:has(>.ozran-001-selection){display:block;min-height:0}.ozran-campaign>.ozran-001-selection{width:100%;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;padding:0;background:#171717}.ozran-campaign>.ozran-001-selection .ozran-001-item:first-child{grid-column:1/-1;aspect-ratio:1.8/1}@media(min-width:750px){.ozran-campaign>.ozran-001-selection{grid-template-columns:repeat(4,minmax(0,1fr))}.ozran-campaign>.ozran-001-selection .ozran-001-item:first-child{grid-column:span 2;grid-row:span 2;aspect-ratio:auto}}@media(min-width:750px){.ozran-campaign>.ozran-001-selection:has(>.ozran-001-item:nth-child(3):last-child){grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));aspect-ratio:2/1}.ozran-campaign>.ozran-001-selection:has(>.ozran-001-item:nth-child(3):last-child)>.ozran-001-item:first-child{grid-column:1;grid-row:span 2;aspect-ratio:auto}.ozran-campaign>.ozran-001-selection:has(>.ozran-001-item:nth-child(3):last-child)>.ozran-001-item:nth-child(n+2){grid-column:2;aspect-ratio:auto}}</style><style>.ozran-001-selection{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;background:#171717}.ozran-001-item{position:relative;min-width:0;overflow:hidden;background:#282828;display:block;aspect-ratio:4/5;text-decoration:none;color:white}.ozran-001-item img,.ozran-001-item svg{display:block;width:100%;height:100%;object-fit:cover;transition:transform .5s ease}.ozran-001-item:hover img{transform:scale(1.045)}.ozran-001-item span{position:absolute;bottom:0;left:0;right:0;display:block;text-align:center;color:#fff;padding:30px 5px 12px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:clamp(9px,1vw,12px);letter-spacing:.12em}.ozran-001-item:first-child{grid-column:1/-1;aspect-ratio:1.8/1}.ozran-001-copy{min-width:0}.ozran-001-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px}.ozran-001-links .ozran-campaign__button{margin-top:0}@media(max-width:749px){.ozran-001-selection{gap:0}.ozran-001-item:first-child{aspect-ratio:1.6/1}.ozran-001-item span{font-size:10px;letter-spacing:.07em}}</style><section class=\"ozran-campaign\"><div class=\"ozran-001-selection\">{% assign ozran_piece_0=all_products['ensemble-oversize-homme-ozran-eclipse-edition-limitee'] %}{% if ozran_piece_0 != blank %}<a href=\"{{ ozran_piece_0.url }}\" class=\"ozran-001-item\" aria-label=\"{{ ozran_piece_0.title | escape }}\">{% if ozran_piece_0.featured_image != blank %}{% render 'ozran-home-gallery', product: ozran_piece_0 %}{% else %}{{ 'product-apparel-1' | placeholder_svg_tag }}{% endif %}<span>ÉCLIPSE · ENSEMBLE HOMME</span></a>{% endif %}{% assign ozran_piece_1=all_products['ensemble-oversize-unisexe-ozran-nexus'] %}{% if ozran_piece_1 != blank %}<a href=\"{{ ozran_piece_1.url }}\" class=\"ozran-001-item\" aria-label=\"{{ ozran_piece_1.title | escape }}\">{% if ozran_piece_1.featured_image != blank %}{% render 'ozran-home-gallery', product: ozran_piece_1 %}{% else %}{{ 'product-apparel-1' | placeholder_svg_tag }}{% endif %}<span>NEXUS · HAUT HOMME</span></a>{% endif %}{% assign ozran_piece_2=all_products['jogging-homme-ozran-nexus'] %}{% if ozran_piece_2 != blank %}<a href=\"{{ ozran_piece_2.url }}\" class=\"ozran-001-item\" aria-label=\"{{ ozran_piece_2.title | escape }}\">{% if ozran_piece_2.featured_image != blank %}{% render 'ozran-home-gallery', product: ozran_piece_2 %}{% else %}{{ 'product-apparel-1' | placeholder_svg_tag }}{% endif %}<span>NEXUS · BAS HOMME</span></a>{% endif %}{% assign ozran_piece_3=all_products['sweat-femme-ozran-nexus'] %}{% if ozran_piece_3 != blank %}<a href=\"{{ ozran_piece_3.url }}\" class=\"ozran-001-item\" aria-label=\"{{ ozran_piece_3.title | escape }}\">{% if ozran_piece_3.featured_image != blank %}{% render 'ozran-home-gallery', product: ozran_piece_3 %}{% else %}{{ 'product-apparel-1' | placeholder_svg_tag }}{% endif %}<span>NEXUS · HAUT FEMME</span></a>{% endif %}{% assign ozran_piece_4=all_products['jogging-femme-ozran-nexus'] %}{% if ozran_piece_4 != blank %}<a href=\"{{ ozran_piece_4.url }}\" class=\"ozran-001-item\" aria-label=\"{{ ozran_piece_4.title | escape }}\">{% if ozran_piece_4.featured_image != blank %}{% render 'ozran-home-gallery', product: ozran_piece_4 %}{% else %}{{ 'product-apparel-1' | placeholder_svg_tag }}{% endif %}<span>NEXUS · BAS FEMME</span></a>{% endif %}</div></section>",
+        "background_color": "#171717",
+        "section_width": "full-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
+    "ozran_univers": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<style>@media(max-width:749px){.ozran-album__letters{grid-template-columns:repeat(6,minmax(0,1fr))!important;max-width:420px}.ozran-album__letters>div{grid-column:span 2}.ozran-album__letters>div:nth-child(4){grid-column:2/span 2}.ozran-album__letters>div:nth-child(5){grid-column:4/span 2}}</style><style>\n.ozran-album{background:#111;color:#F3F0EA;position:relative;font-family:inherit}\n.ozran-album__viewport{height:min(80svh,760px);min-height:500px;overflow-y:auto;overscroll-behavior-y:contain;scroll-snap-type:y mandatory;scrollbar-width:thin;scrollbar-color:#555 #111;-webkit-overflow-scrolling:touch}\n.ozran-album__page{box-sizing:border-box;min-height:100%;height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:48px 24px 70px;border-bottom:1px solid #252525}\n.ozran-album__kicker{font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#c9c3b9;margin-bottom:22px}\n.ozran-album h2{font-family:'GFS Didot',Georgia,serif!important;font-weight:400;font-size:clamp(31px,5vw,60px);line-height:1.13;margin:0 auto 24px}\n.ozran-album__copy{font-size:clamp(15px,1.55vw,19px);line-height:1.75;max-width:690px;margin:0 auto}\n.ozran-album__letters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:32px auto 0;width:100%;max-width:700px}\n.ozran-album__letters b{font-family:'GFS Didot',Georgia,serif;font-size:clamp(33px,5vw,56px);font-weight:400;display:block}\n.ozran-album__letters span{font-size:clamp(10px,1.3vw,14px)}\n.ozran-album__hint{position:absolute;bottom:10px;left:0;right:0;text-align:center;font-size:11px;letter-spacing:.14em;color:#c9c3b9;pointer-events:none;background:linear-gradient(transparent,#111 55%);padding:28px 0 12px}\n@media(max-width:749px){.ozran-album__viewport{height:74svh;min-height:480px}.ozran-album__page{padding:44px 16px 74px}.ozran-album__letters{grid-template-columns:repeat(3,1fr);gap:13px}}\n@media(prefers-reduced-motion:reduce){.ozran-album__viewport{scroll-behavior:auto}}\n</style>\n<div class=\"ozran-album\">\n<div class=\"ozran-album__viewport\" tabindex=\"0\" role=\"region\" aria-label=\"Présentation d’OZRAN, trois pages à faire défiler verticalement\">\n<section class=\"ozran-album__page\"><div class=\"ozran-album__kicker\">OZRAN — NOTRE UNIVERS · 01 / 03</div><h2>L’IDENTITÉ<br>AVANT LE NOM.</h2><p class=\"ozran-album__copy\">OZRAN incarne l’ambition, la discipline et l’indépendance. Des silhouettes streetwear affirmées, une esthétique épurée et un symbole qui parle de lui-même.</p></section>\n<section class=\"ozran-album__page\"><div class=\"ozran-album__kicker\">LE SENS DU NOM · 02 / 03</div><h2>CINQ LETTRES.<br>UNE DIRECTION.</h2><p class=\"ozran-album__copy\">Une interprétation de notre nom, portée par les valeurs qui construisent notre identité.</p><div class=\"ozran-album__letters\"><div><b>O</b><span>Origine</span></div><div><b>Z</b><span>Zèle</span></div><div><b>R</b><span>Résilience</span></div><div><b>A</b><span>Ambition</span></div><div><b>N</b><span>Nouvelle voie</span></div></div></section>\n<section class=\"ozran-album__page\"><div class=\"ozran-album__kicker\">NOTRE VISION · 03 / 03</div><h2>UNE SIGNATURE.<br>UNE ATTITUDE.</h2><p class=\"ozran-album__copy\">OZRAN s’adresse à celles et ceux qui tracent leur propre voie. L’origine rappelle d’où l’on vient, la résilience permet d’avancer, et l’ambition dessine la suite. Chaque pièce exprime cette liberté avec sobriété et caractère.</p></section>\n</div><div class=\"ozran-album__hint\">GLISSER VERS LE HAUT ↑ &nbsp; · &nbsp; 3 PAGES</div></div>",
+        "background_color": "#111111",
+        "section_width": "full-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
+    "collection_list_tdFpVc": {
+      "type": "collection-list",
+      "blocks": {
+        "group_89Ebrz": {
+          "type": "group",
+          "name": "t:names.header",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "align_baseline": false,
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 12,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "background_color": "",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "toggle_overlay": false,
+            "overlay_color": "#00000026",
+            "overlay_style": "solid",
+            "gradient_direction": "to top",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0,
+            "link": "",
+            "open_in_new_tab": false,
+            "placeholder": "",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {}
+        },
+        "static-collection-card": {
+          "type": "_collection-card",
+          "name": "t:names.collection_card",
+          "static": true,
+          "settings": {
+            "placement": "on_image",
+            "horizontal_alignment": "center",
+            "vertical_alignment": "flex-end",
+            "collection_card_gap": 0,
+            "background_color": "{{ settings.color_palette.color2 }}",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_color": "",
+            "border_radius": 0
+          },
+          "blocks": {
+            "collection_title_xEcrLP": {
+              "type": "collection-title",
+              "name": "t:names.collection_title",
+              "settings": {
+                "width": "100%",
+                "max_width": "normal",
+                "alignment": "center",
+                "type_preset": "custom",
+                "font": "var(--font-body--family)",
+                "font_size": "1.125rem",
+                "line_height": "normal",
+                "letter_spacing": "loose",
+                "case": "uppercase",
+                "wrap": "pretty",
+                "background": false,
+                "background_color": "#ffffff",
+                "text_color": "#ffffff",
+                "corner_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              },
+              "blocks": {}
+            },
+            "collection-card-image": {
+              "type": "_collection-card-image",
+              "name": "t:names.collection_card_image",
+              "static": true,
+              "settings": {
+                "image_ratio": "portrait",
+                "toggle_overlay": true,
+                "overlay_color": "#05050545",
+                "overlay_style": "solid",
+                "gradient_direction": "to top",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_color": "",
+                "border_radius": 0
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "collection_title_xEcrLP"
+          ]
+        }
+      },
+      "block_order": [
+        "group_89Ebrz"
+      ],
+      "name": "t:names.collections_grid",
+      "settings": {
+        "collection_list": [
+          "frontpage",
+          "womens-casual-wear-example-products",
+          "unisexe"
+        ],
+        "layout_type": "grid",
+        "carousel_on_mobile": false,
+        "columns": 2,
+        "mobile_columns": "2",
+        "mobile_card_size": "60cqw",
+        "columns_gap": 6,
+        "bento_gap": 8,
+        "rows_gap": 6,
+        "max_collections": 4,
+        "icons_style": "arrow",
+        "icons_shape": "none",
+        "section_width": "full-width",
+        "gap": 0,
+        "background_color": "#f3f0ea",
+        "padding-block-start": 6,
+        "padding-block-end": 6
+      }
+    },
+    "product_list_fa6P9H": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<style>\n.ozran-duo{background:#F3F0EA;padding:64px clamp(16px,4vw,70px);color:#171717}\n.ozran-duo__head{text-align:center;margin:0 0 32px}\n.ozran-duo__head h2{font-size:clamp(19px,2.4vw,31px);font-weight:500;letter-spacing:.13em;margin:0 0 8px}\n.ozran-duo__head p{font-size:12px;letter-spacing:.12em;color:#68635d;margin:0}\n.ozran-duo__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(12px,2.5vw,32px);max-width:1140px;margin:auto}\n.ozran-duo__item{text-decoration:none;color:inherit;min-width:0}\n.ozran-duo__media{aspect-ratio:4/5;background:#e8e4de;overflow:hidden;border:1px solid #d9d3c9}\n.ozran-duo__media img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;transition:transform .45s ease}\n.ozran-duo__item:hover img{transform:scale(1.025)}\n.ozran-duo__title{font-size:clamp(12px,1.15vw,16px);font-weight:500;margin:14px 0 5px;letter-spacing:.025em}\n.ozran-duo__price{font-size:13px;color:#6d6862;text-align:center;width:100%;display:block}\n.ozran-duo__more{display:block;width:max-content;max-width:100%;border:1px solid #171717;padding:12px 24px;margin:30px auto 0;text-decoration:none;color:#171717;font-size:11px;letter-spacing:.13em}\n@media(max-width:749px){.ozran-duo{padding:44px 12px}.ozran-duo__grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.ozran-duo__title{margin-top:10px}.ozran-duo__more{margin-top:24px}}\n@media(prefers-reduced-motion:reduce){.ozran-duo__media img{transition:none}}\n</style>\n<section class=\"ozran-duo\">\n<div class=\"ozran-duo__head\"><h2>PIÈCES SIGNATURES</h2><p>L’ESSENTIEL OZRAN.</p></div>\n<div class=\"ozran-duo__grid\">\n{% assign ozran_signature_handles = 'womens-casual-wear-example-product-1,womens-casual-wear-example-product-3,t-shirt-femme-ozran-noir,jogging-oversize-femme-simple-ozran-noir,sweat-a-capuche-ample-ozran-signature-noir,sweat-zippe-a-capuche-femme-ozran-signature' | split: ',' %}\n{% for ozran_handle in ozran_signature_handles %}\n{% assign product = all_products[ozran_handle] %}\n{% if product != blank %}<a class=\"ozran-duo__item\" href=\"{{ product.url }}\" aria-label=\"{{ product.title | escape }}\"><div class=\"ozran-duo__media\">{% if product.featured_image != blank %}{% render 'ozran-home-gallery', product: product %}{% endif %}</div><div class=\"ozran-duo__title\">{{ product.title | escape }}</div><div class=\"ozran-duo__price\">{{ product.price | money }}</div></a>{% endif %}\n{% endfor %}\n</div><a class=\"ozran-duo__more\" href=\"{{ routes.all_products_collection_url }}\">DÉCOUVRIR TOUTES LES PIÈCES</a>\n</section>",
+        "background_color": "",
+        "section_width": "full-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    },
+    "ozran_detail_editorial": {
+      "type": "custom-liquid",
+      "settings": {
+        "custom_liquid": "<section class=\"ozran-details\"><p class=\"ozran-details__overline\">L’ESSENTIEL, SANS SUPERFLU</p><h2>LE SENS DU DÉTAIL.</h2><p>Des lignes épurées, une identité affirmée et une signature discrète. Chaque pièce OZRAN est pensée pour accompagner celles et ceux qui avancent à leur manière.</p></section>",
+        "background_color": "#f3f0ea",
+        "section_width": "full-width",
+        "padding-block-start": 0,
+        "padding-block-end": 0
+      }
+    }
+  },
+  "order": [
+    "hero_jVaWmY",
+    "ozran_collection_001",
+    "ozran_univers",
+    "collection_list_tdFpVc",
+    "product_list_fa6P9H",
+    "ozran_detail_editorial"
+  ]
+}

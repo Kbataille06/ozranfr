@@ -1,0 +1,412 @@
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+  dir="{{ request.locale.direction | default: 'ltr' }}"
+>
+  <head>
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {%- render 'view-transition-opt-in' -%}
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'card-hover-effect-styles' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-palette' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+
+    <!-- OZRAN homepage font trial: GFS Didot (option 27) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=GFS+Didot&display=swap" rel="stylesheet">
+    <style id="ozran-font-trial-27">
+      body:is(.template-index,.template-collection,.template-product) #MainContent h1, body:is(.template-index,.template-collection,.template-product) #MainContent h2, body:is(.template-index,.template-collection,.template-product) #MainContent h3,
+      body:is(.template-index,.template-collection,.template-product) #MainContent .text-block > p:first-child,
+      body:is(.template-index,.template-collection,.template-product) #MainContent [class*="heading"],
+      body:is(.template-index,.template-collection,.template-product) #MainContent [class*="collection-title"] {
+        font-family: 'GFS Didot', Georgia, serif !important;
+        font-weight: 400 !important;
+      }
+      /* OZRAN — harmonise la typographie du menu hamburger avec l'accueil. */
+      .menu-drawer__navigation .menu-drawer__menu-item,
+      .menu-drawer__navigation .menu-drawer__menu-item-text {
+        font-family: 'GFS Didot', Georgia, serif !important;
+        font-weight: 400 !important;
+      }
+      /* OZRAN: panier coherent avec les titres du site */
+      #cart-drawer .theme-drawer__title,
+      #cart-drawer .cart-drawer__content h2,
+      #cart-drawer .cart-drawer__content h3,
+      body.template-cart #MainContent h1,
+      body.template-cart #MainContent h2,
+      body.template-cart #MainContent h3 {
+        font-family: 'GFS Didot', Georgia, serif !important;
+        font-weight: 400 !important;
+      }
+      body.template-page #MainContent h1,
+      body.template-page #MainContent h2,
+      #shopify-section-footer-group a {
+        font-family: 'GFS Didot', Georgia, serif !important;
+      }
+      /* OZRAN mobile polish: responsive rhythm without desktop changes. */
+      @media screen and (max-width: 749px) {
+        body.template-index #MainContent h1,
+        body.template-index #MainContent h2,
+        body.template-collection #MainContent h1,
+        body.template-product #MainContent h1 {
+          overflow-wrap: break-word;
+          text-wrap: balance;
+          line-height: 1.12;
+        }
+        body.template-index #MainContent .button,
+        body.template-product #MainContent .button,
+        body.template-collection #MainContent .button {
+          min-height: 44px;
+        }
+        .footer-content {
+          row-gap: 20px;
+          padding-inline: 12px;
+        }
+        .footer-content > * { max-width: 100%; }
+        .footer-content a { overflow-wrap: anywhere; }
+        .menu-drawer__menu-item { min-height: 44px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+
+      /* OZRAN — footer typography unified with the rest of the storefront */
+      #shopify-section-footer-group, #shopify-section-footer-group *,
+      footer .footer-content, footer .footer-content *, footer .footer-utilities, footer .footer-utilities * {
+        font-family: 'GFS Didot', Georgia, serif !important;
+        font-weight: 400;
+      }
+    </style>
+  <style id="ozran-editorial-refinement">
+/* OZRAN — editorial luxury refinement, non-published design copy */
+:root {--ozran-cream:#F3F0EA;--ozran-ink:#171717}
+body { -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+#MainContent h1,#MainContent h2,#MainContent h3 {text-wrap:balance}
+#MainContent a,footer a {text-underline-offset:4px}
+#MainContent .button,#MainContent button,.menu-drawer__menu-item {transition:background-color .25s ease,color .25s ease,border-color .25s ease,transform .35s ease}
+#MainContent .button:hover {transform:translateY(-2px)}
+#MainContent :is(.resource-list__item,.product-card) img {transition:transform .65s cubic-bezier(.2,.7,.2,1)}
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {#MainContent .resource-list__item:hover img {transform:scale(1.025)}}
+#MainContent .resource-list__item {overflow:hidden}
+#MainContent .collection-card {border-radius:0!important}
+#MainContent .resource-list__item .collection-card__image {overflow:hidden}
+#MainContent .resource-list__item .collection-card__image img {object-fit:cover}
+#MainContent :is(button,a,input,select):focus-visible {outline:2px solid currentColor;outline-offset:3px}
+#MainContent .product-information .product-details {letter-spacing:.005em}
+.ozran-album__viewport {scroll-behavior:smooth}
+.ozran-campaign {background:#171717;color:#F3F0EA;display:grid;grid-template-columns:1fr 1fr;min-height:470px}
+.ozran-campaign__visual {overflow:hidden;min-height:400px}
+.ozran-campaign__visual img {width:100%;height:100%;display:block;object-fit:cover}
+.ozran-campaign__copy {display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:56px 30px}
+.ozran-campaign__kicker{letter-spacing:.28em;font-size:11px;margin:0 0 22px}
+.ozran-campaign h2 {font-family:'GFS Didot',Georgia,serif!important;font-weight:400!important;font-size:clamp(38px,5vw,75px);line-height:1.12;margin:0 0 22px}
+.ozran-campaign p {max-width:410px;line-height:1.7}
+.ozran-campaign__button {display:inline-block;border:1px solid #F3F0EA;color:#F3F0EA;text-decoration:none;margin-top:28px;padding:14px 28px;letter-spacing:.1em;font-size:12px}
+.ozran-campaign__button:hover{background:#F3F0EA;color:#171717}
+.ozran-details {background:#F3F0EA;text-align:center;padding:72px 18px}
+.ozran-details h2{font-family:'GFS Didot',Georgia,serif!important;font-size:clamp(32px,5vw,56px);font-weight:400!important;margin:10px 0 22px}
+.ozran-details p{max-width:590px;line-height:1.8;margin:0 auto}
+.ozran-details__overline{font-size:11px;letter-spacing:.25em}
+footer .footer-content h2,footer .footer-content h3 {font-family:'GFS Didot',Georgia,serif!important;font-weight:400!important;letter-spacing:.035em}
+footer .footer-content {row-gap:20px}
+@media(max-width:749px){.ozran-campaign{grid-template-columns:1fr}.ozran-campaign__visual{min-height:280px;max-height:410px}.ozran-campaign__copy{padding:48px 20px 56px}.ozran-details{padding:55px 17px}#MainContent .resource-list__item .collection-card{min-width:0}}
+@media(prefers-reduced-motion:reduce){#MainContent *, .ozran-album__viewport{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+</style>
+<style id="ozran-final-details">
+/* OZRAN — final navigation and footer detailing */
+.menu-drawer__navigation .menu-drawer__menu-item{font-family:'GFS Didot',Georgia,serif!important;letter-spacing:.035em;border-bottom:1px solid rgba(127,127,127,.15);padding-block:14px}
+.menu-drawer__navigation .menu-drawer__menu-item:active{opacity:.72}
+#shopify-section-footer-group .footer-content,footer .footer-content{text-align:center}
+#shopify-section-footer-group .footer-content a,footer .footer-content a{transition:opacity .25s ease}
+#shopify-section-footer-group .footer-content a:hover,footer .footer-content a:hover{opacity:.65}
+.ozran-footer-signature{font-family:'GFS Didot',Georgia,serif;font-size:clamp(56px,13vw,180px);letter-spacing:.075em;line-height:.95;color:rgba(243,240,234,.14);text-align:center;user-select:none;overflow:hidden;white-space:nowrap;padding:0 8px}
+@media(max-width:749px){.ozran-footer-signature{font-size:16vw;letter-spacing:.04em}}
+</style>
+<style id="ozran-navigation-detail">.menu-drawer__navigation .menu-drawer__menu-item{font-family:'GFS Didot',Georgia,serif!important;letter-spacing:.035em;border-bottom:1px solid rgba(127,127,127,.15);padding-block:14px} footer .footer-content a{transition:opacity .25s ease}footer .footer-content a:hover{opacity:.65}</style><style id="ozran-collection-theme">/* OZRAN collection editorial background */
+body:has(#MainContent[data-template^="collection"]) #MainContent{background:#F3F0EA;color:#171717}
+#MainContent[data-template^="collection"] .shopify-section{background-color:#F3F0EA}
+#MainContent[data-template^="collection"] > .shopify-section:first-child{border-bottom:1px solid rgba(23,23,23,.10)}
+#MainContent[data-template^="collection"] h1{font-family:'GFS Didot',Georgia,serif;letter-spacing:.015em;font-weight:400}
+#MainContent[data-template^="collection"] .product-grid{row-gap:26px}
+#MainContent[data-template^="collection"] :is(.product-card,.card-wrapper){background:transparent}
+@media(max-width:749px){#MainContent[data-template^="collection"] .product-grid{row-gap:16px}}</style>
+</head>
+
+  <body class="template-{{ template.name }} page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+
+    {% render 'chat-drawer' %}
+
+    <div class="page-wrapper">
+      <div id="header-group">
+        {% sections 'header-group' %}
+      </div>
+
+      <script>
+        /**
+         * Sets `--header-height` and `--header-group-height` to measured values before first paint.
+         *
+         * A few CSS rules position content relative to the header at first paint — a hero sized to
+         * the remaining viewport, a transparent header's negative margin. Without a measured value
+         * those rules use the `60px` fallback from `sections/header.liquid`, and the content visibly
+         * jumps once `header.js` corrects the values after load.
+         *
+         * Measuring forces layout mid-parse, so it only runs where a consuming rule exists.
+         * Callers opt in: the transparent-header branch below, or `snippets/measure-header-heights.liquid`,
+         * which any new first-paint consumer must render too.
+         *
+         * Measures once per page; after load, header.js's ResizeObservers keep the values fresh.
+         * The group-height walk mimics calculateHeaderGroupHeight() in utilities.js — keep them
+         * in sync.
+         */
+        window.measureHeaderHeights = (function () {
+          let measured = false;
+
+          return function measureHeaderHeights() {
+            if (measured) return;
+
+            const header = document.querySelector('#header-component');
+            const headerGroup = document.querySelector('#header-group');
+
+            if (!header || !headerGroup) return;
+            measured = true;
+
+            const headerHeight = header.offsetHeight;
+
+            let headerGroupHeight = 0;
+            for (const element of headerGroup.children) {
+              if (element instanceof HTMLElement) headerGroupHeight += element.offsetHeight;
+            }
+
+            /**
+             * A transparent header is absolutely positioned, so the loop above counts its section
+             * wrapper as 0px. When a section follows it in the group, header.liquid pushes that
+             * section down by the header's height using a margin, which offsetHeight also
+             * excludes — so the header's height has to be added back manually.
+             */
+            if (header.hasAttribute('transparent') && header.parentElement?.nextElementSibling) {
+              headerGroupHeight += headerHeight;
+            }
+
+            document.body.style.setProperty('--header-height', `${headerHeight}px`);
+            document.body.style.setProperty('--header-group-height', `${headerGroupHeight}px`);
+          };
+        })();
+
+        /**
+         * Transparent-header rules consume the measured heights at first paint on every
+         * template, so the transparent case opts in globally here instead of per-section.
+         */
+        if (document.querySelector('#header-component')?.hasAttribute('transparent')) {
+          measureHeaderHeights();
+        }
+
+        /**
+         * Sets `--top-row-height`, consumed by the header underlays and submenus. Deferred to a
+         * rAF so the height read doesn't force layout mid-parse, and scoped to the
+         * header, where all consumers live, so the write only invalidates the header subtree.
+         * Mimics the `--top-row-height` write in updateHeaderHeights() in utilities.js
+         */
+        (function setTopRowHeight() {
+          const header = document.querySelector('#header-component');
+          const headerTopRow = header?.querySelector('.header__row--top');
+          if (!headerTopRow) return;
+
+          window.requestAnimationFrame(function () {
+            header.style.setProperty('--top-row-height', `${headerTopRow.getBoundingClientRect().height}px`);
+          });
+        })();
+
+        /**
+         * Sets `--transparent-header-offset-boolean` when the first section must offset itself
+         * under a transparent header. The non-offset case relies on the `0` default declared in
+         * sections/header.liquid — unlike updateTransparentHeaderOffset() in utilities.js, which
+         * re-runs on editor changes and must write '0' to reset a previously written '1'.
+         */
+        (function updateTransparentHeaderOffset() {
+          const header = document.querySelector('#header-component');
+          const headerSection = document.querySelector('#header-group .header-section');
+          if (!headerSection || !header?.hasAttribute('transparent')) return;
+
+          const hasImmediateSection = headerSection.nextElementSibling?.classList.contains('shopify-section');
+          if (!hasImmediateSection) {
+            document.body.style.setProperty('--transparent-header-offset-boolean', '1');
+          }
+        })();
+      </script>
+
+      <main
+        id="MainContent"
+        class="content-for-layout"
+        role="main"
+        data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+        data-product-transition="{{ settings.transition_to_main_product }}"
+        data-template="{{ template }}"
+      >
+        {{ content_for_layout }}
+      </main>
+
+      <footer>
+        {% sections 'footer-group' %}
+      </footer>
+    </div>
+
+    {% render 'cart-drawer', render_wrapper: true %}
+    {% render 'theme-drawer' %}
+
+    {% render 'search-modal' %}
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+  
+<style id="ozran-scroll-reveal-style">
+/* OZRAN — scroll reveal: gentle movement without affecting accessibility */
+@media (prefers-reduced-motion: no-preference) {
+  #MainContent [data-ozran-reveal-pending] {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    transition: opacity 700ms cubic-bezier(.2,.7,.2,1), transform 700ms cubic-bezier(.2,.7,.2,1);
+    transition-delay: var(--ozran-reveal-delay, 0ms);
+  }
+  #MainContent [data-ozran-reveal-pending].ozran-reveal-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+</style>
+<script id="ozran-scroll-reveal-script">
+(function () {
+  const selector = '#MainContent .ozran-001-item, #MainContent .resource-list__item, #MainContent .product-grid > *, #MainContent .ozran-details > *, #MainContent .ozran-campaign__copy > *, #MainContent .collection-card, #MainContent .product-card';
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion || !('IntersectionObserver' in window)) return;
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('ozran-reveal-visible');
+        observer.unobserve(entry.target);
+        entry.target.addEventListener('transitionend', function () {
+          entry.target.removeAttribute('data-ozran-reveal-pending');
+          entry.target.classList.remove('ozran-reveal-visible');
+          entry.target.style.removeProperty('--ozran-reveal-delay');
+        }, { once: true });
+      }
+    });
+  }, { rootMargin: '0px 0px -28px 0px', threshold: 0.05 });
+  function register(root) {
+    (root || document).querySelectorAll(selector).forEach(function (el, i) {
+      if (el.hasAttribute('data-ozran-reveal-pending') || el.dataset.ozranRevealDone) return;
+      /* Avoid nesting animated product cards inside already-animated list items. */
+      if (el.closest('[data-ozran-reveal-pending], [data-ozran-reveal-done]')) return;
+      el.dataset.ozranRevealDone = 'true';
+      const bounds = el.getBoundingClientRect();
+      /* Never hide content already visible during initial render. */
+      if (bounds.top < window.innerHeight * 0.85 && bounds.bottom > 0) return;
+      el.style.setProperty('--ozran-reveal-delay', ((i % 4) * 65) + 'ms');
+      el.setAttribute('data-ozran-reveal-pending', '');
+      observer.observe(el);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ register(document); });
+  else register(document);
+  document.addEventListener('shopify:section:load', function (event) { register(event.target); });
+  /* Product grids may be replaced by filtering or infinite-scroll loading. */
+  document.addEventListener('click', function () { window.requestAnimationFrame(function () { register(document); }); }, { passive: true });
+})();
+</script>
+
+<script id="ozran-quick-shop-v4">
+(function(){
+ const selector='body.template-index product-card .ozran-quick-panel,body.template-collection product-card .ozran-quick-panel';
+ function install(panel){
+  if(panel.dataset.ozranInstalled)return;panel.dataset.ozranInstalled='1';
+  const card=panel.closest('product-card');if(!card)return;
+  const variants=JSON.parse(panel.dataset.variants||'[]'),buy=panel.querySelector('.ozran-quick-panel__buy'),buyText=panel.querySelector('.ozran-quick-panel__buytext'),status=panel.querySelector('.ozran-quick-panel__status');
+  let closing;
+  function position(){
+   const box=card.getBoundingClientRect(),w=Math.min(360,Math.max(260,innerWidth*.26)),gap=12;
+   const left=box.right+w+gap<innerWidth-12?box.right+gap:Math.max(12,box.left-w-gap);
+   panel.style.width=w+'px';panel.style.left=left+'px';
+   panel.style.top=Math.max(10,Math.min(box.top,innerHeight-Math.min(innerHeight-20,580)-10))+'px';
+   panel.style.maxHeight=Math.min(innerHeight-20,580)+'px';
+  }
+  function open(){clearTimeout(closing);if(panel.parentElement!==document.body)document.body.appendChild(panel);position();panel.classList.add('ozran-panel-floating');panel.hidden=false;}
+  function close(){closing=setTimeout(function(){panel.classList.remove('ozran-panel-floating');panel.hidden=true},140)}
+  card.addEventListener('mouseenter',function(){if(matchMedia('(hover:hover)').matches)open()});
+  card.addEventListener('mouseleave',function(){if(matchMedia('(hover:hover)').matches)close()});
+  panel.addEventListener('mouseenter',function(){clearTimeout(closing)});
+  panel.addEventListener('mouseleave',function(){if(matchMedia('(hover:hover)').matches)close()});
+  panel.querySelector('.ozran-quick-panel__close').addEventListener('click',function(){close()});
+  panel.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+  card.ozranQuickOpen=open;
+  card.ozranQuickClose=close;
+  window.addEventListener('scroll',function(){if(panel.classList.contains('ozran-panel-floating')&&matchMedia('(hover:hover)').matches)position()},{passive:true});
+  window.addEventListener('resize',position,{passive:true});
+  function selectedVariant(){
+   const vals=[...panel.querySelectorAll('fieldset')].map(fs=>fs.querySelector('input:checked')?.value);
+   return variants.find(v=>v.options.every((o,i)=>o===vals[i]))|| (vals.length===0?variants[0]:null);
+  }
+  function refresh(){let v=selectedVariant();buy.disabled=!v||!v.available;status.textContent=v&&!v.available?'Variante indisponible':!v?'Sélectionnez les options':''}
+  panel.addEventListener('change',refresh);refresh();
+  buy.addEventListener('click',async function(){
+   const v=selectedVariant();if(!v||!v.available)return;buy.disabled=true;status.textContent='';
+   try{
+    const res=await fetch((window.Shopify?.routes?.root||'/')+'cart/add.js',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({items:[{id:v.id,quantity:1}]})});
+    if(!res.ok)throw new Error('Ajout impossible');
+    buyText.textContent='BIENVENUE DANS L’HISTOIRE';buy.dataset.added='true';
+    document.dispatchEvent(new CustomEvent('cart:refresh',{bubbles:true}));
+    setTimeout(function(){buyText.textContent='FAIS PARTIE DE L’HISTOIRE';delete buy.dataset.added;refresh()},2500);
+   }catch(e){status.textContent='Impossible d’ajouter cette pièce. Réessayez.';refresh()}
+  });
+  panel.hidden=true;
+ }
+ let activeCard=null;
+ function showMobile(card){
+   if(activeCard===card)return;
+   if(activeCard)activeCard.ozranQuickClose();
+   activeCard=card;
+   if(card)card.ozranQuickOpen();
+ }
+ // On touch devices the product card retains its normal link: no preview first tap.
+ document.addEventListener('click',function(e){
+   if(e.target.closest('.ozran-quick-panel__close'))activeCard=null;
+ },true);
+ function init(root){(root||document).querySelectorAll(selector).forEach(install)}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){init(document)});else init(document);
+ document.addEventListener('shopify:section:load',function(e){init(e.target)});
+ let ozranLastY=window.scrollY;
+ window.addEventListener('scroll',function(){
+   const y=window.scrollY;
+   if(matchMedia('(hover:none)').matches && activeCard && Math.abs(y-ozranLastY)>2){
+     activeCard.ozranQuickClose();activeCard=null;
+   }
+   ozranLastY=y;
+ },{passive:true});
+ document.addEventListener('touchmove',function(e){
+   if(!matchMedia('(hover:none)').matches||!activeCard||e.target.closest('.ozran-quick-panel'))return;
+   activeCard.ozranQuickClose();activeCard=null;
+ },{passive:true});
+})();
+</script>
+</body>
+</html>

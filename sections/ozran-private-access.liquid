@@ -1,0 +1,39 @@
+{% comment %} OZRAN — opt-in Private Access, merchant editable, native Shopify customer form. {% endcomment %}
+<section id="ozran-private-access" class="ozran-private" aria-labelledby="ozran-private-title">
+  <div class="ozran-private__shell">
+    <div class="ozran-private__eyebrow">{{ section.settings.eyebrow | escape }} <span>— OZRAN</span></div>
+    <div class="ozran-private__grid">
+      <div class="ozran-private__content">
+        <h2 id="ozran-private-title">{{ section.settings.title | escape }}</h2>
+        <p>{{ section.settings.description | escape }}</p>
+        <div class="ozran-private__benefit"><span>01</span> Accès aux annonces des prochaines éditions</div>
+        <div class="ozran-private__benefit"><span>02</span> Accès anticipé de 24 h aux drops concernés</div>
+        <div class="ozran-private__benefit"><span>03</span> Actualités et coulisses de la marque</div>
+      </div>
+      <div class="ozran-private__formwrap">
+        <span class="ozran-private__small">LA LISTE PRIVÉE</span>
+        {% form 'customer', id: 'OzranPrivateForm' %}
+          <input type="hidden" name="contact[tags]" value="newsletter,ozran-private-access">
+          {% if form.posted_successfully? %}
+            <p class="ozran-private__success" role="status">Votre inscription a bien été prise en compte. Bienvenue dans l'univers OZRAN.</p>
+          {% else %}
+            <label for="OzranPrivateEmail">Votre adresse e-mail</label>
+            <div class="ozran-private__field"><input id="OzranPrivateEmail" type="email" name="contact[email]" placeholder="vous@exemple.com" autocomplete="email" required aria-required="true"><button type="submit">REJOINDRE <span aria-hidden="true">↗</span></button></div>
+            <label class="ozran-private__consent"><input type="checkbox" name="ozran_consent" required> <span>J’accepte de recevoir par e-mail les communications OZRAN sur les lancements et nouveautés. Je pourrai me désinscrire à tout moment.</span></label>
+            {% if form.errors %}<div class="ozran-private__error" role="alert">{{ form.errors | default_errors }}</div>{% endif %}
+          {% endif %}
+        {% endform %}
+        <p class="ozran-private__note">Inscription gratuite, sans obligation d'achat. Aucun avantage produit n'est garanti en dehors des conditions annoncées pour chaque lancement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% stylesheet %}
+.ozran-private{background:#131313;color:#f4f0ea;padding:clamp(58px,8vw,116px) clamp(18px,5vw,80px)}
+.ozran-private__shell{max-width:1320px;margin:auto}.ozran-private__eyebrow{font-size:11px;letter-spacing:.27em;text-transform:uppercase;color:#d4c3a8;border-bottom:1px solid rgba(232,224,210,.2);padding-bottom:23px;margin-bottom:clamp(36px,6vw,86px)}.ozran-private__eyebrow span{color:#77736e}
+.ozran-private__grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(35px,8vw,135px);align-items:center}.ozran-private__content h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(44px,7.5vw,112px);line-height:.98;letter-spacing:-.05em;max-width:800px;margin:0 0 32px}.ozran-private__content p{font-size:clamp(14px,1.4vw,17px);line-height:1.7;color:#c7c1b8;max-width:530px;margin:0 0 39px}.ozran-private__benefit{padding:13px 0;border-top:1px solid #3b3834;font-size:12px;letter-spacing:.035em}.ozran-private__benefit span{color:#b8a387;font-size:10px;margin-right:18px}.ozran-private__small{display:block;color:#bfae96;letter-spacing:.24em;font-size:11px;margin-bottom:23px}.ozran-private__formwrap{padding:clamp(24px,4vw,54px);border:1px solid #575049;background:#1b1a19}.ozran-private__formwrap form>label:not(.ozran-private__consent){display:block;font-size:12px;letter-spacing:.1em;margin-bottom:10px}.ozran-private__field{display:flex;min-height:55px;border:1px solid #8a8074}.ozran-private__field input{background:#22201e;color:white;min-width:0;width:100%;border:0;border-radius:0;padding:0 15px;font-size:14px;outline-offset:-3px}.ozran-private__field button{background:#e3d8c7;color:#171511;white-space:nowrap;border:0;padding:0 18px;font-size:11px;font-weight:650;letter-spacing:.09em;cursor:pointer}.ozran-private__field button span{font-size:18px;margin-left:5px}.ozran-private__consent{display:flex;gap:11px;align-items:flex-start;color:#bcb5aa;font-size:11px;line-height:1.6;margin-top:19px}.ozran-private__consent input{accent-color:#d0baa0;margin-top:4px;flex:0 0 auto}.ozran-private__note{font-size:11px;line-height:1.65;color:#8f8880;margin:20px 0 0}.ozran-private__success{color:#e7dcc9;line-height:1.6}.ozran-private__error{margin-top:15px;color:#f1b9a7}
+@media(max-width:749px){.ozran-private{padding:60px 18px 66px}.ozran-private__grid{grid-template-columns:1fr;gap:39px}.ozran-private__eyebrow{padding-bottom:18px;margin-bottom:38px;font-size:10px}.ozran-private__content h2{font-size:clamp(48px,15vw,75px);margin-bottom:23px}.ozran-private__content p{margin-bottom:27px}.ozran-private__formwrap{padding:23px 18px}.ozran-private__field{flex-wrap:wrap;border:0;gap:8px}.ozran-private__field input{height:52px;border:1px solid #867d73}.ozran-private__field button{width:100%;height:50px;display:flex;justify-content:space-between;align-items:center}}
+{% endstylesheet %}
+{% schema %}
+{"name":"OZRAN Accès privé","tag":"section","class":"ozran-private-section","settings":[{"type":"text","id":"eyebrow","label":"Sur-titre","default":"OZRAN PRIVATE ACCESS"},{"type":"text","id":"title","label":"Titre","default":"L'ACCÈS SE MÉRITE."},{"type":"textarea","id":"description","label":"Description","default":"Rejoignez le cercle OZRAN. Découvrez les prochains lancements et accédez à une fenêtre privée de 24 heures avant l'ouverture au public des drops concernés."}],"presets":[{"name":"OZRAN Accès privé"}]}
+{% endschema %}

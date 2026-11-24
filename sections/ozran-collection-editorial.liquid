@@ -1,0 +1,59 @@
+{% comment %} Editorial introduction to the two existing OZRAN editions. {% endcomment %}
+{% if collection.handle == 'ozran-nexus' or collection.handle == 'ozran-nexus-homme' or collection.handle == 'ozran-nexus-femme' or collection.handle == 'ozran-eclipse' %}
+  {% assign ozran_is_eclipse = false %}
+  {% if collection.handle == 'ozran-eclipse' %}{% assign ozran_is_eclipse = true %}{% endif %}
+  <section class="ozran-collection-intro" aria-labelledby="ozran-collection-intro-title">
+    <div class="ozran-collection-intro__copy">
+      <div class="ozran-collection-intro__kicker">OZRAN / {{ section.settings.kicker | escape }}</div>
+      {% if ozran_is_eclipse %}
+        <h2 id="ozran-collection-intro-title">{{ section.settings.eclipse_heading | escape }}</h2>
+        <p>{{ section.settings.eclipse_copy | escape }}</p>
+      {% else %}
+        <h2 id="ozran-collection-intro-title">{{ section.settings.nexus_heading | escape }}</h2>
+        <p>{{ section.settings.nexus_copy | escape }}</p>
+      {% endif %}
+      <div class="ozran-collection-intro__links">
+      {% if ozran_is_eclipse %}<a href="#CollectionProductGrid" data-ozran-explore-eclipse>EXPLORER ÉCLIPSE <span aria-hidden="true">↗</span></a>
+      {% else %}<a href="/collections/ozran-nexus-homme">HOMME <span aria-hidden="true">↗</span></a><a href="/collections/ozran-nexus-femme">FEMME <span aria-hidden="true">↗</span></a>{% endif %}
+      </div>
+    </div>
+    <div class="ozran-collection-intro__media">
+      {% if collection.image != blank %}
+        {{ collection.image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '480,720,1000,1400', alt: collection.title }}
+      {% elsif collection.products.first.featured_image != blank %}
+        {{ collection.products.first.featured_image | image_url: width: 1400 | image_tag: loading: 'lazy', widths: '480,720,1000,1400', alt: collection.title }}
+      {% else %}<span class="ozran-collection-intro__monogram" aria-hidden="true">OZRAN</span>{% endif %}
+      <span class="ozran-collection-intro__corner">{{ collection.title | escape }}</span>
+    </div>
+  </section>
+{% endif %}
+
+<script>
+(function(){
+ if(document.documentElement.dataset.ozranEclipseScrollReady)return;
+ document.documentElement.dataset.ozranEclipseScrollReady='true';
+ document.addEventListener('click',function(event){
+  if(!(event.target instanceof Element))return;
+  const link=event.target.closest('a[data-ozran-explore-eclipse]');
+  if(!link)return;
+  const product=document.querySelector('.product-grid-container .product-grid__item');
+  const target=product||document.getElementById('CollectionProductGrid');
+  if(!target)return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const header=document.getElementById('header-component');
+  const headerBox=header?header.getBoundingClientRect():null;
+  const offset=headerBox?Math.max(0,headerBox.bottom):0;
+  const top=Math.max(0,window.scrollY+target.getBoundingClientRect().top-offset-16);
+  window.scrollTo({top:top,behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'});
+ },true);
+})();
+</script>
+
+{% stylesheet %}
+.ozran-collection-intro{display:grid;grid-template-columns:1fr 1fr;min-height:min(70vw,580px);background:#141414;color:#eee9e1}.ozran-collection-intro__copy{padding:clamp(45px,7vw,110px) clamp(24px,6vw,100px);display:flex;flex-direction:column;align-items:flex-start;justify-content:center}.ozran-collection-intro__kicker{font-size:10px;letter-spacing:.25em;color:#baaa90;margin-bottom:35px}.ozran-collection-intro h2{font-family:Georgia,serif;font-size:clamp(42px,6.8vw,104px);font-weight:400;letter-spacing:-.06em;line-height:1;margin:0 0 28px}.ozran-collection-intro p{font-size:clamp(13px,1.4vw,17px);line-height:1.75;color:#bcb7af;max-width:460px;margin:0 0 32px}.ozran-collection-intro__links{display:flex;flex-wrap:wrap;gap:18px}.ozran-collection-intro__links a{border-bottom:1px solid #baa78b;text-decoration:none;color:#e7ded2;font-size:11px;letter-spacing:.12em;padding:11px 0}.ozran-collection-intro__links a span{padding-left:14px}.ozran-collection-intro__media{min-height:400px;background:radial-gradient(ellipse at 45% 35%,#57504b,#242220 75%);position:relative;overflow:hidden}.ozran-collection-intro__media img{height:100%;width:100%;position:absolute;inset:0;object-fit:contain;object-position:center}.ozran-collection-intro__corner{position:absolute;bottom:20px;left:25px;font-size:10px;letter-spacing:.18em;color:#e4ded5;text-shadow:0 1px 7px #000}.ozran-collection-intro__monogram{position:absolute;inset:0;display:grid;place-items:center;color:#968c7f;font-family:Georgia,serif;font-size:clamp(40px,6vw,100px)}
+@media(max-width:749px){.ozran-collection-intro{grid-template-columns:1fr}.ozran-collection-intro__copy{padding:54px 23px 42px}.ozran-collection-intro__kicker{margin-bottom:23px}.ozran-collection-intro h2{font-size:clamp(54px,15vw,84px)}.ozran-collection-intro__media{min-height:0;aspect-ratio:4/4.6}.ozran-collection-intro__links{gap:24px}}
+{% endstylesheet %}
+{% schema %}
+{"name":"OZRAN Intro collection","tag":"section","settings":[{"type":"text","id":"kicker","label":"Sur-titre","default":"LES ÉDITIONS"},{"type":"text","id":"nexus_heading","label":"Titre Nexus","default":"NEXUS."},{"type":"textarea","id":"nexus_copy","label":"Texte Nexus","default":"Une silhouette, deux expressions. Nexus réunit les pièces homme et femme dans une même idée : avancer librement, sans compromis sur son identité."},{"type":"text","id":"eclipse_heading","label":"Titre Éclipse","default":"ÉCLIPSE."},{"type":"textarea","id":"eclipse_copy","label":"Texte Éclipse","default":"Une édition à part, pensée autour du contraste et du mystère. Découvrez les pièces Éclipse et leur langage visuel distinctif."}],"presets":[{"name":"OZRAN Intro collection"}]}
+{% endschema %}

@@ -1,0 +1,252 @@
+
+
+{% liquid
+  assign product_resource = closest.product
+  if request.visual_preview_mode and product_resource == blank
+    assign product_resource = collections.all.products.first
+  endif
+-%}
+
+{% unless product_resource == blank %}
+  {% render 'variant-main-picker', product_resource: product_resource, section: section, product: product %}
+
+  {% comment %} OZRAN — tailles hors standard, devis et non achat direct {% endcomment %}
+
+  {% liquid
+    assign ozran_has_size = false
+    for ozran_option in product_resource.options_with_values
+      assign ozran_option_name = ozran_option.name | downcase
+      if ozran_option_name contains 'taille' or ozran_option_name contains 'size'
+        assign ozran_has_size = true
+      endif
+    endfor
+  %}
+  {% if ozran_has_size %}
+    <style>
+      .ozran-custom-size{margin:18px 0 22px;padding:16px 0 0;border-top:1px solid rgba(120,110,100,.20);font-family:inherit}
+      .ozran-custom-size summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;color:inherit;font-size:13px;letter-spacing:.015em}
+      .ozran-custom-size summary::-webkit-details-marker{display:none}
+      .ozran-custom-size__plus{font-size:22px;font-weight:300;line-height:1;transition:transform .2s}
+      .ozran-custom-size[open] .ozran-custom-size__plus{transform:rotate(45deg)}
+      .ozran-custom-size__content{margin-top:16px;padding:22px;background:#f3f0ea;color:#171717;border:1px solid #e2dcd4}
+      .ozran-custom-size__eyebrow{font-size:10px;letter-spacing:.20em;text-transform:uppercase;margin:0 0 10px}
+      .ozran-custom-size__title{font-family:'GFS Didot',Georgia,serif;font-size:clamp(23px,3vw,29px);line-height:1.2;margin:0 0 10px;font-weight:400}
+      .ozran-custom-size__body{font-size:12px;line-height:1.7;margin:0 0 18px}
+      .ozran-custom-size label{display:block;font-size:11px;letter-spacing:.06em;margin:0 0 7px}
+      .ozran-custom-size input{display:block;width:100%;max-width:440px;min-height:44px;padding:12px;border:1px solid #bcb6ad;border-radius:0;background:white;color:#171717;font-size:14px}
+      .ozran-custom-size__button{display:inline-flex;margin-top:12px;min-height:44px;padding:12px 21px;align-items:center;justify-content:center;background:#171717;color:#fff!important;text-decoration:none;font-size:11px;letter-spacing:.07em;text-transform:uppercase;transition:background .2s}
+      .ozran-custom-size__button:hover{background:#393939}
+      .ozran-custom-size__foot{font-size:11px;line-height:1.5;opacity:.7;margin:12px 0 0}
+      @media(prefers-reduced-motion:reduce){.ozran-custom-size *{transition:none!important}}
+    </style>
+    <details class="ozran-custom-size">
+      <summary><span>Une autre taille ? <u>Demander un devis</u></span><span aria-hidden="true" class="ozran-custom-size__plus">+</span></summary>
+      <div class="ozran-custom-size__content">
+        <p class="ozran-custom-size__eyebrow">OZRAN — Sur mesure</p>
+        <h3 class="ozran-custom-size__title">Votre taille, votre silhouette.</h3>
+        <p class="ozran-custom-size__body">Vous recherchez une taille inférieure à XS ou supérieure à XXL ? Indiquez-nous votre besoin : nous étudierons la faisabilité avec notre atelier.</p>
+        <label for="ozran-special-size-{{ block.id }}">Taille ou mensurations recherchées</label>
+        <input id="ozran-special-size-{{ block.id }}" type="text" placeholder="Ex. XXS, 3XL, mensurations…">
+        <a class="ozran-custom-size__button" data-ozran-quote-link href="mailto:ozrancontacts@gmail.com">Envoyer ma demande</a>
+        <p class="ozran-custom-size__foot">Demande sans engagement. Tarif, disponibilité et délai à confirmer.</p>
+      </div>
+    </details>
+    <script>
+      (() => {
+        const root=document.getElementById('ozran-special-size-{{ block.id }}')?.closest('details');
+        if(!root || root.dataset.ozranBound)return;
+        root.dataset.ozranBound='1';
+        root.querySelector('[data-ozran-quote-link]').addEventListener('click',(event)=>{
+          const size=root.querySelector('input').value.trim()||'À préciser';
+          const productTitle={{ product_resource.title | json }};
+          const body='Bonjour OZRAN,\n\nJe souhaite un devis pour une taille hors standard.\nArticle : '+productTitle+'\nTaille / mensurations : '+size+'\nFiche : '+location.href+'\n\nInformations complémentaires : ';
+          event.currentTarget.href='mailto:ozrancontacts@gmail.com?subject='+encodeURIComponent('OZRAN — Demande de taille personnalisée')+'&body='+encodeURIComponent(body);
+        });
+      })();
+    </script>
+  {% endif %}
+{% endunless %}
+
+{% schema %}
+{
+  "name": "t:names.product_variant_picker",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "t:content.type"
+    },
+    {
+      "type": "select",
+      "id": "variant_style",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "dropdowns",
+          "label": "t:options.dropdowns"
+        },
+        {
+          "value": "buttons",
+          "label": "t:options.buttons"
+        }
+      ],
+      "default": "buttons"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatches",
+      "label": "t:settings.swatches",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:content.appearance"
+    },
+    {
+      "type": "color",
+      "id": "option_label_text_color",
+      "label": "t:settings.text_color",
+      "placeholder": "t:settings.default",
+      "alpha": true
+    },
+    {
+      "type": "select",
+      "id": "variant_style_class",
+      "label": "t:settings.variant_button_style",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "default",
+      "info": "t:info.edit_variants_in_theme_settings"
+    },
+    {
+      "type": "color",
+      "id": "custom_variant_background",
+      "label": "t:settings.background",
+      "default": "{{ settings.color_palette.background }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_variant_text",
+      "label": "t:settings.text",
+      "default": "{{ settings.color_palette.foreground }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_variant_border",
+      "label": "t:settings.borders",
+      "default": "{{ settings.color_palette.foreground }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "selected_variant_style_class",
+      "label": "t:settings.selected_variant_button_style",
+      "options": [
+        {
+          "value": "default",
+          "label": "t:options.default"
+        },
+        {
+          "value": "custom",
+          "label": "t:options.custom"
+        }
+      ],
+      "default": "default",
+      "visible_if": "{{ block.settings.variant_style == 'buttons' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_selected_variant_background",
+      "label": "t:settings.background",
+      "default": "{{ settings.color_palette.foreground }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style == 'buttons' and block.settings.selected_variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_selected_variant_text",
+      "label": "t:settings.text",
+      "default": "{{ settings.color_palette.background }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style == 'buttons' and block.settings.selected_variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_selected_variant_border",
+      "label": "t:settings.borders",
+      "default": "{{ settings.color_palette.foreground }}",
+      "alpha": true,
+      "visible_if": "{{ block.settings.variant_style == 'buttons' and block.settings.selected_variant_style_class == 'custom' }}"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "t:settings.left",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "t:settings.right",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.product_variant_picker",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

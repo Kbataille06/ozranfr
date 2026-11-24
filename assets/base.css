@@ -1,0 +1,2861 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--color-foreground);
+  background: var(--color-background);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  min-height: 100svh;
+  font-variation-settings: 'slnt' 0;
+}
+
+:root {
+  --hover-transition-duration: 0.25s;
+  --hover-transition-timing: ease-out;
+  --submenu-animation-speed: 360ms;
+}
+
+html {
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40)) var(--color-background);
+  scroll-behavior: smooth;
+}
+
+@media (min-width: 990px) {
+  html:has(.page-wrapper),
+  html:has(.page-wrapper) body {
+    height: 100dvh;
+    overflow: hidden;
+  }
+}
+
+html[scroll-lock] {
+  overflow: hidden;
+}
+
+/* Only lock .page-wrapper where it is the scroll container. Below 990px the document scrolls, and
+   overflow on .page-wrapper would make it the sticky header's scroll container, moving the header off screen. */
+@media (min-width: 990px) {
+  html[scroll-lock] .page-wrapper {
+    overflow: hidden;
+  }
+}
+
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  transition: margin-inline-end var(--animation-speed) var(--animation-timing-fade-out);
+}
+
+@media (min-width: 990px) {
+  .page-wrapper {
+    height: 100dvh;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-foreground-rgb) / var(--opacity-40)) var(--color-background);
+  }
+
+  .page-wrapper--drawer-open shopify-account::part(dialog) {
+    translate: calc(-1 * var(--theme-drawer-width, var(--sidebar-width)));
+  }
+
+  /* The theme drawer opens from the inline-end edge, so the shift mirrors in RTL */
+  [dir='rtl'] .page-wrapper--drawer-open shopify-account::part(dialog) {
+    translate: var(--theme-drawer-width, var(--sidebar-width));
+  }
+}
+
+.page-wrapper--drawer-open {
+  margin-inline-end: var(--theme-drawer-width, var(--sidebar-width));
+  transition-timing-function: var(--animation-timing-fade-in);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+/* Theme images fill their container. Images in blog post content keep the size from their width
+   attribute or their intrinsic size, and max-width keeps them inside the column. */
+img:where(:not(.blog-post-content img)) {
+  width: 100%;
+}
+
+input,
+textarea,
+select {
+  font: inherit;
+  border-radius: var(--style-border-radius-inputs);
+}
+
+/** override ios and firefox defaults */
+select {
+  background-color: var(--color-background);
+  color: currentcolor;
+}
+
+.product-card,
+.collection-card,
+.predictive-search-results__card--product,
+.predictive-search-results__card {
+  position: relative;
+  transition: transform var(--hover-transition-duration) var(--hover-transition-timing),
+    box-shadow var(--hover-transition-duration) var(--hover-transition-timing);
+  z-index: var(--layer-flat);
+}
+
+.product-card__link {
+  position: absolute;
+  inset: 0;
+}
+
+.product-card__content {
+  position: relative;
+  cursor: pointer;
+}
+
+dialog {
+  /* the ::backdrop inherits from the originating element, custom properties must be set on the dialog element */
+  --backdrop-color-rgb: var(--color-shadow-rgb);
+
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+.wrap-text {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+p:empty {
+  display: none;
+}
+
+:first-child:is(p, h1, h2, h3, h4, h5, h6),
+:first-child:empty + :where(p, h1, h2, h3, h4, h5, h6) {
+  margin-block-start: 0;
+}
+
+/* Remove bottom margin from last text item, or previous to last if the last is empty */
+:last-child:is(p, h1, h2, h3, h4, h5, h6),
+:where(p, h1, h2, h3, h4, h5, h6):nth-child(2):has(+ :last-child:empty) {
+  margin-block-end: 0;
+}
+
+/* view transitions */
+
+/*
+ * The cross-document (MPA) opt-in `@view-transition { navigation: auto }` is declared per-layout
+ * (layout/theme.liquid and layout/password.liquid), because this stylesheet is shared by both layouts
+ * and a static stylesheet can't read theme settings.
+ * It is gated on the same `settings.page_transition_enabled or settings.transition_to_main_product` condition as the
+ * render blocker, so the opt-in and its opt-out switch can never disagree. The rules below only
+ * take effect once an `@view-transition` opt-in is active, so they are inert without it.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /* Keep page interactive while view transitions are running */
+  :root {
+    view-transition-name: none;
+  }
+
+  /* Have the root transition during page navigation */
+  html:active-view-transition-type(page-navigation),
+  html:active-view-transition-type(product-image-transition) {
+    view-transition-name: root-custom;
+  }
+
+  ::view-transition {
+    pointer-events: none;
+  }
+
+  html:active-view-transition-type(page-navigation) main[data-page-transition-enabled='true'] {
+    view-transition-name: main-content;
+  }
+
+  html:active-view-transition-type(page-navigation) main[data-product-transition='true'][data-template*='product'] {
+    view-transition-name: none;
+  }
+
+  ::view-transition-old(main-content) {
+    animation: var(--view-transition-old-main-content);
+  }
+
+  ::view-transition-new(main-content) {
+    animation: var(--view-transition-new-main-content);
+  }
+
+  html:active-view-transition-type(product-image-transition) {
+    [data-view-transition-type='product-image-transition'] {
+      view-transition-name: product-image-transition;
+    }
+
+    [data-view-transition-type='product-details'] {
+      view-transition-name: product-details;
+    }
+  }
+
+  ::view-transition-group(product-image-transition) {
+    z-index: 1;
+  }
+
+  ::view-transition-group(product-image-transition),
+  ::view-transition-group(product-details) {
+    animation-duration: var(--animation-speed);
+    animation-timing-function: var(--animation-easing);
+  }
+
+  ::view-transition-old(product-image-transition),
+  ::view-transition-new(product-image-transition) {
+    block-size: 100%;
+    overflow: hidden;
+    object-fit: cover;
+    animation-duration: 0.25s;
+    animation-timing-function: var(--animation-easing);
+  }
+
+  ::view-transition-new(product-details) {
+    animation: var(--view-transition-new-main-content);
+  }
+}
+
+/* Focus */
+*:focus-visible {
+  outline: var(--focus-outline-width) solid currentcolor;
+  outline-offset: var(--focus-outline-offset);
+}
+
+@supports not selector(:focus-visible) {
+  *:focus {
+    outline: var(--focus-outline-width) solid currentcolor;
+    outline-offset: var(--focus-outline-offset);
+  }
+}
+
+.focus-inset {
+  outline-offset: calc(var(--focus-outline-width) * -1);
+}
+
+/* Layout */
+.content-for-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.content-for-layout > .shopify-section:last-child {
+  flex-grow: 1;
+}
+
+/* Set up page widths & margins. Gutters grow to the device safe-area insets (viewport-fit=cover)
+   so section backgrounds bleed edge-to-edge while content stays clear of the notch; taking the
+   larger of both insets keeps the centered page grid symmetric. */
+.page-width-wide,
+.page-width-normal,
+.page-width-narrow,
+.page-width-content {
+  --page-margin: max(16px, var(--safe-area-inset-left, 0px), var(--safe-area-inset-right, 0px));
+}
+
+@media screen and (min-width: 750px) {
+  .page-width-wide,
+  .page-width-normal,
+  .page-width-narrow,
+  .page-width-content {
+    --page-margin: max(40px, var(--safe-area-inset-left, 0px), var(--safe-area-inset-right, 0px));
+  }
+}
+
+.page-width-wide {
+  /* NOTE: This results in a page width of 2400px because of how we set up margins with grid */
+  --page-content-width: var(--wide-page-width);
+  --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+.page-width-normal {
+  --page-content-width: var(--normal-page-width);
+  --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+.page-width-narrow {
+  /* NOTE: This results in a page width of 1400px because of how we set up margins with grid */
+  --page-content-width: var(--narrow-page-width);
+  --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+.page-width-content {
+  --page-content-width: var(--normal-content-width);
+  --page-width: calc(var(--page-content-width) + (var(--page-margin) * 2));
+}
+
+/* Section width full vs. page
+   The reason we use a grid to contain the section is to allow for the section to have a
+   full-width background image even if the section content is constrained by the page width. Do not try
+   to rewrite this to max-width: --page-width; margin: 0 auto;, it doesn't work. */
+.section {
+  --full-page-grid-central-column-width: min(
+    var(--page-width) - var(--page-margin) * 2,
+    calc(100% - var(--page-margin) * 2)
+  );
+  --full-page-grid-margin: minmax(var(--page-margin), 1fr);
+  --full-page-grid-with-margins: var(--full-page-grid-margin) var(--full-page-grid-central-column-width)
+    var(--full-page-grid-margin);
+
+  /* Utility variable gives the grid's first column width. Provides an offset width for components like carousels */
+  --util-page-margin-offset: max(
+    var(--page-margin),
+    calc((100% - min(var(--page-content-width), 100% - var(--page-margin) * 2)) / 2)
+  );
+
+  /* Offset for full-width sections to account for the page margin,
+  used for Marquee — note that --util-page-margin-offset doesn't work here */
+  --full-page-margin-inline-offset: calc(((100vw - var(--full-page-grid-central-column-width)) / 2) * -1);
+
+  width: 100%;
+
+  /* This is required to make background images work, which are <img> rendered absolutely */
+  position: relative;
+
+  /* Set up the grid */
+  display: grid;
+  grid-template-columns: var(--full-page-grid-with-margins);
+  min-height: var(--section-min-height, 'auto');
+}
+
+/* Place all direct children in the center column by default */
+.section > * {
+  grid-column: 2;
+}
+
+/* Make the actual section background transparent, and instead apply it to a separate sibling element to enable stacking with hero shadow  */
+.shopify-section:not(.header-section) :is(.section, .cart-summary) {
+  background: transparent;
+}
+
+.shopify-section:not(.header-section):has(.section) {
+  position: relative;
+}
+
+.shopify-section:not(.header-section) .section-background {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-section-background);
+  background-color: var(--color-background);
+}
+
+/* For page-width sections, all content goes in the center column */
+.section--page-width > * {
+  grid-column: 2;
+}
+
+/* For full-width sections, content spans all columns */
+.section--full-width > * {
+  grid-column: 1 / -1;
+}
+
+@media screen and (max-width: 749px) {
+  .section--mobile-full-width > * {
+    grid-column: 1 / -1;
+  }
+}
+
+/* For full-width sections with margin, content still spans full width but with space on the sides */
+.section--full-width.section--full-width-margin > * {
+  grid-column: 1 / -1;
+
+  @media screen and (min-width: 750px) {
+    padding-inline: var(--page-margin);
+  }
+}
+
+/* Some section content break out to full width of the page */
+.section > .force-full-width {
+  grid-column: 1 / -1;
+}
+
+.section--height-small {
+  --section-min-height: var(--section-height-small);
+}
+
+.section--height-medium {
+  --section-min-height: var(--section-height-medium);
+}
+
+.section--height-large {
+  --section-min-height: var(--section-height-large);
+}
+
+.section--height-full-screen {
+  --section-min-height: 100svh;
+}
+
+.section-content-wrapper.section-content-wrapper {
+  min-height: calc(var(--section-min-height, 'auto') - var(--section-height-offset, 0px));
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Utility */
+
+.hidden {
+  /* stylelint-disable-next-line declaration-no-important */
+  display: none !important;
+}
+
+@media screen and (max-width: 749px) {
+  .hidden--mobile,
+  .mobile\:hidden {
+    /* stylelint-disable-next-line declaration-no-important */
+    display: none !important;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .hidden--desktop,
+  .desktop\:hidden {
+    /* stylelint-disable-next-line declaration-no-important */
+    display: none !important;
+  }
+}
+
+.hide-when-empty:empty {
+  /* stylelint-disable-next-line declaration-no-important */
+  display: none !important;
+}
+
+.visually-hidden:not(:focus, :active) {
+  /* stylelint-disable-next-line declaration-no-important */
+  position: absolute !important;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  /* stylelint-disable-next-line declaration-no-important */
+  word-wrap: normal !important;
+}
+
+.contents {
+  display: contents;
+}
+
+.flex {
+  display: flex;
+  gap: var(--gap-md);
+}
+
+.grid {
+  --centered-column-number: 12;
+  --full-width-column-number: 14;
+  --centered: column-1 / span var(--centered-column-number);
+  --full-width: column-0 / span var(--full-width-column-number);
+
+  display: flex;
+  flex-direction: column;
+}
+
+@media screen and (min-width: 750px) {
+  .grid {
+    display: grid;
+    gap: 0;
+    grid-template-columns: var(--margin-4xl) repeat(var(--centered-column-number), minmax(0, 1fr)) var(--margin-4xl);
+    grid-template-areas: 'column-0 column-1 column-2 column-3 column-4 column-5 column-6 column-7 column-8 column-9 column-10 column-11 column-12 column-13';
+  }
+}
+
+@media screen and (min-width: 1400px) {
+  .grid {
+    grid-template-columns:
+      1fr repeat(
+        var(--centered-column-number),
+        minmax(0, calc((var(--page-width) - var(--page-margin) * 2) / var(--centered-column-number)))
+      )
+      1fr;
+  }
+}
+
+.flip-x {
+  scale: -1 1;
+}
+
+.list-unstyled {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.text-left {
+  --text-align: start;
+
+  text-align: start;
+}
+
+.text-center {
+  --text-align: center;
+
+  text-align: center;
+}
+
+.text-right {
+  --text-align: end;
+
+  text-align: end;
+}
+
+.text-inherit {
+  color: inherit;
+}
+
+.user-select-text {
+  user-select: text;
+}
+
+.justify-left {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-right {
+  justify-content: flex-end;
+}
+
+.svg-wrapper {
+  color: currentcolor;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+  pointer-events: none;
+}
+
+.svg-wrapper--smaller {
+  width: var(--icon-size-2xs);
+  height: var(--icon-size-2xs);
+}
+
+.svg-wrapper--small {
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
+}
+
+.svg-wrapper > svg {
+  width: var(--icon-size-sm);
+  height: var(--icon-size-sm);
+}
+
+.relative {
+  position: relative;
+}
+
+/* Icons */
+.icon-success,
+.icon-error {
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  flex-shrink: 0;
+}
+
+.icon-success {
+  color: var(--color-success);
+}
+
+.icon-error {
+  fill: var(--color-error);
+}
+
+.icon-default {
+  fill: currentColor;
+}
+
+[data-placeholder='true'] * {
+  cursor: default;
+}
+
+/* Base text and heading styles */
+body,
+.paragraph:not(.button),
+.paragraph > *,
+.text-block.paragraph :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-paragraph--family);
+  font-style: var(--font-paragraph--style);
+  font-weight: var(--font-paragraph--weight);
+  font-size: var(--font-paragraph--size);
+  line-height: var(--font-paragraph--line-height);
+  text-transform: var(--font-paragraph--case);
+  -webkit-font-smoothing: antialiased;
+  color: var(--color, var(--color-foreground));
+}
+
+/* Ensure inputs with type presets maintain minimum 16px on mobile to prevent iOS zoom */
+@media screen and (max-width: 1200px) {
+  input.paragraph.paragraph,
+  input.paragraph.paragraph:not([type]),
+  textarea.paragraph.paragraph,
+  select.paragraph.paragraph {
+    font-size: max(1rem, var(--font-paragraph--size));
+  }
+}
+
+.paragraph > small {
+  font-size: smaller;
+}
+
+/* Typography presets */
+
+h1,
+.h1.h1,
+.text-block.h1 > *,
+.text-block.h1 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h1--family);
+  font-style: var(--font-h1--style);
+  font-weight: var(--font-h1--weight);
+  font-size: var(--font-h1--size);
+  line-height: var(--font-h1--line-height);
+  letter-spacing: var(--font-h1--letter-spacing);
+  text-transform: var(--font-h1--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h1.h1,
+  textarea.h1.h1,
+  select.h1.h1 {
+    font-size: max(1rem, var(--font-h1--size));
+  }
+}
+
+h2,
+.h2.h2,
+.text-block.h2 > *,
+.text-block.h2 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h2--family);
+  font-style: var(--font-h2--style);
+  font-weight: var(--font-h2--weight);
+  font-size: var(--font-h2--size);
+  line-height: var(--font-h2--line-height);
+  letter-spacing: var(--font-h2--letter-spacing);
+  text-transform: var(--font-h2--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h2.h2,
+  textarea.h2.h2,
+  select.h2.h2 {
+    font-size: max(1rem, var(--font-h2--size));
+  }
+}
+
+h3,
+.h3,
+.h3.h3,
+.text-block.h3 > *,
+.text-block.h3 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h3--family);
+  font-style: var(--font-h3--style);
+  font-weight: var(--font-h3--weight);
+  font-size: var(--font-h3--size);
+  line-height: var(--font-h3--line-height);
+  letter-spacing: var(--font-h3--letter-spacing);
+  text-transform: var(--font-h3--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h3,
+  textarea.h3,
+  select.h3 {
+    font-size: max(1rem, var(--font-h3--size));
+  }
+}
+
+h4,
+.h4.h4,
+.text-block.h4 > *,
+.text-block.h4 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h4--family);
+  font-style: var(--font-h4--style);
+  font-weight: var(--font-h4--weight);
+  font-size: var(--font-h4--size);
+  line-height: var(--font-h4--line-height);
+  letter-spacing: var(--font-h4--letter-spacing);
+  text-transform: var(--font-h4--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h4.h4,
+  textarea.h4.h4,
+  select.h4.h4 {
+    font-size: max(1rem, var(--font-h4--size));
+  }
+}
+
+h5,
+.h5.h5,
+.text-block.h5 > *,
+.text-block.h5 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h5--family);
+  font-style: var(--font-h5--style);
+  font-weight: var(--font-h5--weight);
+  font-size: var(--font-h5--size);
+  line-height: var(--font-h5--line-height);
+  letter-spacing: var(--font-h5--letter-spacing);
+  text-transform: var(--font-h5--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h5.h5,
+  textarea.h5.h5,
+  select.h5.h5 {
+    font-size: max(1rem, var(--font-h5--size));
+  }
+}
+
+h6,
+.h6.h6,
+.text-block.h6 > *,
+.text-block.h6 :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-h6--family);
+  font-style: var(--font-h6--style);
+  font-weight: var(--font-h6--weight);
+  font-size: var(--font-h6--size);
+  line-height: var(--font-h6--line-height);
+  letter-spacing: var(--font-h6--letter-spacing);
+  text-transform: var(--font-h6--case);
+  color: var(--color);
+}
+
+@media screen and (max-width: 1200px) {
+  input.h6.h6,
+  textarea.h6.h6,
+  select.h6.h6 {
+    font-size: max(1rem, var(--font-h6--size));
+  }
+}
+
+:first-child:is(.h1, .h2, .h3, .h4, .h5, .h6) {
+  margin-block-start: 0;
+}
+
+:last-child:is(.h1, .h2, .h3, .h4, .h5, .h6) {
+  margin-block-end: 0;
+}
+
+/* Links */
+a {
+  color: currentcolor;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 0.075em;
+  text-underline-offset: 0.125em;
+  transition: text-decoration-color var(--animation-speed) var(--animation-easing),
+    color var(--animation-speed) var(--animation-easing);
+}
+
+:is(h1, h2, h3, h4, h5, h6, p) > a:hover {
+  color: rgb(var(--color-rgb, var(--color-foreground-rgb)) / 0.7);
+}
+
+/* Add underline to text using our paragraph styles only. */
+p:not(.h1, .h2, .h3, .h4, .h5, .h6) a:where(:not(.button, .button-secondary)),
+.rte :is(p, ul, ol, table):not(.h1, .h2, .h3, .h4, .h5, .h6) a:where(:not(.button, .button-secondary)) {
+  text-decoration-color: currentcolor;
+
+  &:hover {
+    text-decoration-color: currentcolor;
+    color: rgb(var(--color-rgb, var(--color-foreground-rgb)) / 0.7);
+  }
+}
+
+.container-background-image {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center center;
+}
+
+/* iOS fix: hide the default arrow on the summary */
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Buttons */
+.button,
+.button-secondary,
+.button-custom,
+button.shopify-payment-button__button--unbranded {
+  --text-align: center;
+
+  display: grid;
+  align-content: center;
+  text-decoration: none;
+  text-align: var(--text-align);
+  color: var(--button-color);
+  appearance: none;
+  background-color: var(--button-background-color);
+  border: none;
+  font-family: var(--font-paragraph--family);
+  font-style: var(--font-paragraph--style);
+  font-weight: var(--font-paragraph--weight);
+  font-size: var(--font-paragraph--size);
+  line-height: var(--font-paragraph--line-height);
+  margin-block: 0;
+  transition: color var(--animation-speed) var(--animation-easing),
+    box-shadow var(--animation-speed) var(--animation-easing),
+    background-color var(--animation-speed) var(--animation-easing);
+  cursor: pointer;
+  width: fit-content;
+  box-shadow: inset 0 0 0 var(--button-border-width) var(--button-border-color);
+  padding-block: var(--button-padding-block);
+  padding-inline: var(--button-padding-inline);
+}
+
+.button {
+  font-family: var(--button-font-family-primary);
+  font-style: var(--button-font-style-primary);
+  font-weight: var(--button-font-weight-primary);
+  text-transform: var(--button-text-case-primary);
+  border-radius: var(--style-border-radius-buttons-primary);
+}
+
+.button:not(.button-secondary, .button-unstyled) {
+  outline-color: var(--button-focus-outline-color, var(--button-background-color));
+}
+
+.button-secondary {
+  font-family: var(--button-font-family-secondary);
+  font-style: var(--button-font-style-secondary);
+  font-weight: var(--button-font-weight-secondary);
+  text-transform: var(--button-text-case-secondary);
+  border-radius: var(--style-border-radius-buttons-secondary);
+}
+
+button.shopify-payment-button__button--unbranded {
+  font-family: var(--button-font-family-primary);
+  font-style: var(--button-font-style-primary);
+  font-weight: var(--button-font-weight-primary);
+  text-transform: var(--button-text-case-primary);
+}
+
+textarea,
+input:not([type='checkbox'], [type='radio']) {
+  background-color: var(--color-input-background);
+  border-color: var(--color-input-border);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: rgb(var(--color-input-text-rgb) / var(--opacity-muted-text));
+}
+
+textarea:not(:placeholder-shown)::placeholder,
+input:not(:placeholder-shown)::placeholder {
+  opacity: 0;
+}
+
+/* The declaration above is messing with buttons that have an attribute of hidden as it overwrites the display value */
+.button[hidden] {
+  display: none;
+}
+
+.button[aria-disabled='true'],
+.button-secondary[aria-disabled='true'],
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button,
+button.shopify-payment-button__button--unbranded {
+  --button-color: var(--color-primary-button-text);
+  --button-background-color: var(--color-primary-button-background);
+  --button-border-color: var(--color-primary-button-border);
+  --button-border-width: var(--style-border-width-primary);
+  --button-focus-outline-color: var(--color-primary-button-focus-outline);
+}
+
+.button:hover,
+button.shopify-payment-button__button--unbranded:hover:not([disabled]) {
+  --button-color: var(--color-primary-button-hover-text);
+  --button-background-color: var(--color-primary-button-hover-background);
+  --button-border-color: var(--color-primary-button-hover-border);
+}
+
+.button-secondary {
+  --button-color: var(--color-secondary-button-text);
+  --button-background-color: var(--color-secondary-button-background);
+  --button-border-color: var(--color-secondary-button-border);
+  --button-border-width: var(--style-border-width-secondary);
+}
+
+.button-secondary:hover {
+  --button-color: var(--color-secondary-button-hover-text);
+  --button-background-color: var(--color-secondary-button-hover-background);
+  --button-border-color: var(--color-secondary-button-hover-border);
+}
+
+.button-custom {
+  --button-color: var(--color-primary-button-text);
+  --button-background-color: var(--color-primary-button-background);
+  --button-border-color: var(--color-primary-button-border);
+  --button-border-width: var(--style-border-width-secondary);
+  --button-focus-outline-color: var(--color-primary-button-focus-outline);
+
+  font-family: var(--button-font-family-primary);
+  font-style: var(--button-font-style-primary);
+  font-weight: var(--button-font-weight-primary);
+  text-transform: var(--button-text-case-primary);
+  border-radius: var(--style-border-radius-buttons-primary);
+  outline-color: var(--button-focus-outline-color, var(--button-background-color));
+}
+
+.button-custom:hover {
+  --button-color: var(--color-primary-button-hover-text);
+  --button-background-color: var(--color-primary-button-hover-background);
+  --button-border-color: var(--color-primary-button-hover-border);
+}
+
+/* Needed to override the default Shopify styles */
+button.shopify-payment-button__button--unbranded:hover:not([disabled]) {
+  background-color: var(--button-background-color);
+}
+
+.button-unstyled {
+  display: block;
+  padding: 0;
+  background-color: inherit;
+  color: var(--color-foreground);
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  font-family: var(--font-paragraph--family);
+  font-style: var(--font-paragraph--style);
+  font-size: var(--font-paragraph--size);
+}
+
+/* Link-style buttons that also carry a button class keep the paragraph weight, not the button font weight */
+.button-unstyled:where(.button, .button-secondary, .button-custom) {
+  font-weight: var(--font-paragraph--weight);
+}
+
+.button-unstyled:hover {
+  background-color: inherit;
+}
+
+/* Default hover dim for link-style buttons, scoped via :where() so component-specific
+   hover rules (.facets__clear-all-link, .header-actions__action, etc.) still win. */
+:where(.button-unstyled):hover {
+  --hover-color-rgb: var(--color-foreground-rgb);
+
+  color: rgb(var(--hover-color-rgb) / var(--opacity-70));
+}
+
+.button-unstyled--with-icon {
+  color: var(--color-foreground);
+  display: flex;
+  gap: var(--gap-2xs);
+  align-items: center;
+}
+
+.button-unstyled--transparent {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* Caret icon transition */
+.icon-caret svg {
+  transition: transform var(--animation-speed) var(--animation-easing);
+}
+
+summary {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  padding-block: var(--padding-sm);
+}
+
+summary:hover {
+  color: rgb(var(--color-foreground-rgb) / var(--opacity-80));
+}
+
+/* Animate the UI elements in only after the view transition is complete */
+.close-button {
+  position: fixed;
+
+  /* Keep the fixed close button clear of the status bar and inline-end notch (viewport-fit=cover) */
+  top: max(var(--margin-lg), var(--safe-area-inset-top, 0px));
+  inset-inline-end: max(var(--margin-lg), var(--safe-area-inset-right, 0px));
+  width: var(--minimum-touch-target);
+  height: var(--minimum-touch-target);
+  z-index: var(--layer-flat);
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* For the outline radius */
+  border-radius: 50%;
+}
+
+/* Safe-area env() values are physical; in RTL the button sits by the left-side notch */
+[dir='rtl'] .close-button {
+  inset-inline-end: max(var(--margin-lg), var(--safe-area-inset-left, 0px));
+}
+
+/* This triggers iOS < 16.4. The outline bug is not recognized as a lack of @supports */
+
+@supports not (background-color: rgb(from red 150 g b / alpha)) {
+  /**
+    There is a bug in safari < 16.4 that causes the outline to not follow the elements border radius. This is a workaround.
+    Using element selector to increase specificity.
+  **/
+
+  .close-button:focus-visible {
+    outline: none;
+    overflow: visible;
+  }
+
+  .close-button:focus-visible::after {
+    content: '';
+    position: absolute;
+    inset: calc(-1 * var(--focus-outline-offset));
+    border: var(--focus-outline-width) solid currentColor;
+    border-radius: 50%;
+    display: inherit;
+  }
+}
+
+.dialog--closed .close-button {
+  animation: elementSlideOutBottom calc(var(--animation-speed) * 0.5) var(--animation-easing) forwards;
+}
+
+.close-button:hover {
+  background-color: transparent;
+  opacity: 0.8;
+}
+
+.close-button svg {
+  width: var(--icon-size-xs);
+  height: var(--icon-size-xs);
+}
+
+/* Product media */
+.product-media {
+  display: flex;
+  flex: 1;
+}
+
+.sticky-content {
+  position: sticky;
+  top: var(--sticky-header-offset, 0);
+  z-index: var(--layer-flat);
+}
+
+@media screen and (min-width: 750px) {
+  .sticky-content--desktop,
+  .sticky-content--desktop.full-height--desktop > .group-block {
+    position: sticky;
+    top: var(--sticky-header-offset, 0);
+    z-index: var(--layer-flat);
+  }
+}
+
+/* Spacing style */
+.spacing-style {
+  --spacing-scale: var(--spacing-scale-md);
+
+  @media screen and (min-width: 990px) {
+    --spacing-scale: var(--spacing-scale-default);
+  }
+
+  /* Must disable this, when you use these with calc and another unit type, things break — see logo.liquid */
+  /* stylelint-disable length-zero-no-unit */
+  --padding-block: 0px;
+  --padding-block-start: var(--padding-block, 0px);
+  --padding-block-end: var(--padding-block, 0px);
+  --padding-inline: 0px;
+  --padding-inline-start: var(--padding-inline, 0px);
+  --padding-inline-end: var(--padding-inline, 0px);
+  --margin-block: 0px;
+  --margin-block-start: var(--margin-block, 0px);
+  --margin-block-end: var(--margin-block, 0px);
+  --margin-inline: 0px;
+  --margin-inline-start: var(--margin-inline, 0px);
+  --margin-inline-end: var(--margin-inline, 0px);
+
+  padding-block: calc(var(--padding-block-start) + var(--section-top-offset, 0px)) var(--padding-block-end);
+  padding-inline: var(--padding-inline-start) var(--padding-inline-end);
+  margin-block: var(--margin-block-start) var(--margin-block-end);
+  margin-inline: var(--margin-inline-start) var(--margin-inline-end);
+}
+
+/* Size style */
+.size-style {
+  width: var(--size-style-width-mobile, var(--size-style-width));
+  height: var(--size-style-height-mobile, var(--size-style-height));
+
+  @media screen and (min-width: 750px) {
+    width: var(--size-style-width);
+    height: var(--size-style-height);
+  }
+}
+
+/* Custom Typography style */
+.custom-typography,
+.custom-typography > * {
+  font-family: var(--font-family);
+  font-weight: var(--font-weight);
+  text-transform: var(--text-transform);
+  text-wrap: var(--text-wrap);
+  line-height: var(--line-height);
+  letter-spacing: var(--letter-spacing);
+}
+
+.custom-typography {
+  h1 {
+    line-height: var(--line-height--display, var(--line-height));
+  }
+
+  h2,
+  h3,
+  h4 {
+    line-height: var(--line-height--heading, var(--line-height));
+  }
+
+  p {
+    line-height: var(--line-height--body, var(--line-height));
+  }
+}
+
+.custom-font-size,
+.custom-font-size > * {
+  font-size: var(--font-size);
+}
+
+.custom-font-weight,
+.custom-font-weight > * {
+  font-weight: var(--font-weight);
+}
+
+/* Border override style */
+.border-style {
+  border-width: var(--border-width);
+  border-style: var(--border-style);
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+}
+
+/* Gap scaling style */
+.gap-style,
+.layout-panel-flex {
+  --gap-scale: var(--spacing-scale-md);
+
+  @media screen and (min-width: 990px) {
+    --gap-scale: var(--spacing-scale-default);
+  }
+}
+
+.layout-panel-flex {
+  display: flex;
+  gap: var(--gap);
+  height: 100%;
+}
+
+.shopify-block:has(> [shopify-block-empty]) {
+  display: none;
+}
+
+.layout-panel-flex--row {
+  flex-flow: row var(--flex-wrap);
+  justify-content: var(--horizontal-alignment);
+  align-items: var(--vertical-alignment);
+}
+
+.layout-panel-flex--column {
+  flex-flow: column var(--flex-wrap);
+  align-items: var(--horizontal-alignment);
+  justify-content: var(--vertical-alignment);
+}
+
+@media screen and (max-width: 749px) {
+  .mobile-column {
+    flex-flow: column nowrap;
+    align-items: var(--horizontal-alignment);
+    justify-content: var(--vertical-alignment-mobile);
+  }
+
+  .layout-panel-flex--row:not(.mobile-column) {
+    flex-wrap: var(--flex-wrap-mobile);
+    height: auto;
+
+    > .menu {
+      flex: 1 1 min-content;
+    }
+
+    > .text-block {
+      flex: 1 1 var(--max-width--display-tight);
+    }
+
+    > .image-block {
+      flex: 1 1 var(--size-style-width-mobile-min);
+    }
+
+    > .button {
+      flex: 0 0 fit-content;
+    }
+
+    > .group-block--height-fill {
+      height: calc(var(--section-min-height, auto) - var(--section-height-offset, 0px));
+    }
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .layout-panel-flex {
+    flex-direction: var(--flex-direction);
+  }
+}
+
+/* Form fields */
+.field {
+  position: relative;
+  width: 100%;
+  display: flex;
+  transition: box-shadow var(--animation-speed) ease;
+}
+
+.field__input {
+  flex-grow: 1;
+  text-align: start;
+  border-radius: var(--style-border-radius-inputs);
+  transition: box-shadow var(--animation-speed) ease, background-color var(--animation-speed) ease;
+  padding: var(--input-padding);
+  box-shadow: var(--input-box-shadow);
+  background-color: var(--color-input-background);
+  color: var(--color-input-text);
+  border: none;
+  outline: none;
+  font-size: var(--font-paragraph--size);
+
+  &:autofill {
+    background-color: var(--color-input-background);
+    color: var(--color-input-text);
+  }
+}
+
+.field__input:focus {
+  box-shadow: var(--input-box-shadow-focus);
+}
+
+.field__input--button-radius {
+  border-radius: var(--style-border-radius-buttons-primary);
+}
+
+.field__input--button-padding {
+  padding-inline: var(--padding-3xl);
+}
+
+.field__label {
+  color: rgb(var(--color-input-text-rgb) / var(--opacity-80));
+  font-size: var(--font-paragraph--size);
+  inset-inline-start: var(--input-padding-x);
+  top: 50%;
+  transform: translateY(-50%);
+  margin-bottom: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: top var(--animation-speed) ease, font-size var(--animation-speed) ease;
+}
+
+/* RTE styles */
+.rte,
+.shopify-policy__title {
+  :is(h1, h2, h3, h4, h5, h6) {
+    margin-block: clamp(1.5rem, 1em * 3.3, 2.5rem) var(--font-heading--spacing);
+  }
+
+  :first-child:is(p, h1, h2, h3, h4, h5, h6),
+  :first-child:empty + :is(p, h1, h2, h3, h4, h5, h6) {
+    margin-block-start: 0;
+  }
+
+  ul,
+  ol {
+    margin-block-start: 0;
+    padding-inline-start: 1.5em;
+  }
+
+  /* Only apply margin-block-end to the higher level list, not nested lists */
+  :is(ul, ol):not(:is(ul, ol) :is(ul, ol)) {
+    margin-block-end: 1em;
+  }
+
+  blockquote {
+    margin-inline: 1.5em 2.3em;
+    margin-block: 3.8em;
+    padding-inline-start: 0.8em;
+    border-inline-start: 1.5px solid rgb(var(--color-foreground-rgb) / var(--opacity-25));
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .rte-table-wrapper {
+    overflow-x: auto;
+  }
+
+  table {
+    /* stylelint-disable-next-line declaration-no-important */
+    width: 100% !important;
+    border-collapse: collapse;
+  }
+
+  tr:not(:has(td)),
+  thead {
+    background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  tr:has(td) {
+    border-bottom: 1px solid rgb(var(--color-foreground-rgb) / var(--opacity-10));
+  }
+
+  th,
+  td {
+    text-align: start;
+    padding-inline: var(--padding-md);
+    padding-block: var(--padding-sm);
+  }
+}
+
+.shopify-policy__container {
+  padding-block: var(--padding-xl);
+}
+
+/* Radio buttons and checkboxes - shared base styles */
+:where(input[type='radio']),
+:where(input[type='checkbox']) {
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  aspect-ratio: 1;
+  margin: 0;
+  margin-inline-end: var(--padding-3xs);
+  padding: 0;
+  border: var(--checkbox-border);
+  appearance: none;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+/* Radio buttons */
+input[type='radio'] {
+  border-radius: var(--style-border-radius-50);
+  background: transparent;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+:where(input[type='radio']):checked {
+  border-color: var(--color-foreground);
+  background: var(--color-background);
+}
+
+:where(input[type='radio']):checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%; /* stylelint-disable-line csstools/use-logical -- centring pair with a physical translate(-50%) */
+  transform: translate(-50%, -50%);
+  width: calc(var(--checkbox-size) / 2);
+  height: calc(var(--checkbox-size) / 2);
+  background: var(--color-foreground);
+  border-radius: var(--style-border-radius-50);
+  transition: background 0.2s ease;
+}
+
+:where(input[type='radio']):disabled {
+  border-color: var(--input-disabled-border-color);
+  background-color: var(--input-disabled-background-color);
+  cursor: not-allowed;
+}
+
+:where(input[type='radio']):disabled:checked::after {
+  background: var(--input-disabled-background-color);
+}
+
+:where(input[type='radio']):not(:disabled):hover {
+  border-color: rgb(var(--color-foreground-rgb) / var(--opacity-40-60));
+  background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+}
+
+:where(input[type='radio']):not(:disabled):hover:checked {
+  border-color: var(--color-foreground);
+  background-color: var(--color-background);
+}
+
+:where(input[type='radio']):not(:disabled):hover:checked::after {
+  background: rgb(var(--color-foreground-rgb) / var(--opacity-85));
+}
+
+/* Checkboxes */
+:where(input[type='checkbox']) {
+  border-radius: var(--checkbox-border-radius);
+  background-color: var(--color-background);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+:where(input[type='checkbox']):checked {
+  background-color: var(--color-foreground);
+  border-color: var(--color-foreground);
+}
+
+:where(input[type='checkbox']):checked::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%; /* stylelint-disable-line csstools/use-logical -- centring pair with a physical translate(-50%) */
+  transform: translate(-50%, -50%);
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
+  background-color: var(--color-background);
+  mask-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.75439 10.7485L7.68601 14.5888C7.79288 14.7288 7.84632 14.7988 7.91174 14.8242C7.96907 14.8466 8.03262 14.8469 8.09022 14.8253C8.15596 14.8007 8.21026 14.7314 8.31886 14.5927L15.2475 5.74658' stroke='black' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}
+
+:where(input[type='checkbox']):not(:disabled):hover {
+  border-color: rgb(var(--color-foreground-rgb) / var(--opacity-40-60));
+  background-color: rgb(var(--color-foreground-rgb) / var(--opacity-5));
+}
+
+:where(input[type='checkbox']):not(:disabled):hover:checked {
+  border-color: var(--color-foreground);
+  background-color: rgb(var(--color-foreground-rgb) / var(--opacity-85));
+}
+
+:where(input[type='checkbox']):disabled {
+  background-color: var(--input-disabled-background-color);
+  border-color: var(--input-disabled-border-color);
+  cursor: not-allowed;
+}
+
+:where(input[type='checkbox']):disabled:checked::after {
+  background-color: var(--input-disabled-text-color);
+}
+
+/* Shared styles for radio buttons and checkboxes */
+:where(input[type='radio']) + label,
+:where(input[type='checkbox']) + label {
+  display: inline;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+:where(input[type='radio']):disabled + label,
+:where(input[type='checkbox']):disabled + label {
+  color: var(--input-disabled-text-color);
+  cursor: not-allowed;
+}
+
+/* Animation declarations - to be kept at the bottom of the file for ease of find */
+@keyframes grow {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.2);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes move-and-fade {
+  from {
+    transform: translate(var(--start-x, 0), var(--start-y, 0));
+    opacity: var(--start-opacity, 0);
+  }
+
+  to {
+    transform: translate(var(--end-x, 0), var(--end-y, 0));
+    opacity: var(--end-opacity, 1);
+  }
+}
+
+@keyframes slideInTopViewTransition {
+  from {
+    transform: translateY(100px);
+  }
+}
+
+@keyframes elementSlideInTop {
+  from {
+    margin-top: var(--padding-sm);
+    opacity: 0;
+  }
+
+  to {
+    margin-top: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes elementSlideOutTop {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(var(--padding-sm));
+    opacity: 0;
+  }
+}
+
+@keyframes elementSlideOutBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(calc(-1 * var(--padding-sm)));
+    opacity: 0;
+  }
+}
+
+@keyframes thumbnailsSlideInTop {
+  from {
+    transform: translateY(calc(-50% + var(--margin-lg)));
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+}
+
+@keyframes thumbnailsSlideOutTop {
+  from {
+    transform: translateY(-50%);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(calc(-50% + var(--margin-lg)));
+    opacity: 0;
+  }
+}
+
+@keyframes thumbnailsSlideInBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes thumbnailsSlideOutBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes search-element-slide-in-bottom {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes search-element-slide-out-bottom {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+}
+
+@keyframes backdropFilter {
+  from {
+    backdrop-filter: brightness(1);
+  }
+
+  to {
+    backdrop-filter: brightness(0.75);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideInTop {
+  from {
+    transform: translateY(var(--padding-sm));
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideOutTop {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(var(--padding-sm));
+    opacity: 0;
+  }
+}
+
+/* Slideshow Arrow Hover Animation - must stay in base.css for proper CSS cascade */
+
+slideshow-container[animate-arrows]:hover > slideshow-arrows .slideshow-control,
+slideshow-component:focus-within > slideshow-container[animate-arrows] > slideshow-arrows .slideshow-control {
+  animation: arrowsSlideIn var(--animation-speed) var(--animation-easing) forwards;
+}
+
+/* Clipped controls preserve accessible paging without intercepting touch taps. */
+@media (hover: none) and (pointer: coarse) {
+  .resource-list__carousel > [animate-arrows] > :where(slideshow-arrows) > .slideshow-control:not(:focus-visible) {
+    position: absolute;
+    clip: rect(0 0 0 0);
+    animation: none;
+  }
+
+  .resource-list__carousel > [animate-arrows] > :where(slideshow-arrows) > .slideshow-control:focus-visible {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+@keyframes arrowsSlideIn {
+  from {
+    transform: translate(var(--padding-sm), 0);
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.section-resource-list,
+.section-carousel {
+  row-gap: var(--gap);
+}
+
+.section-resource-list__content {
+  display: flex;
+  flex-direction: column;
+  align-items: var(--horizontal-alignment);
+  gap: var(--gap);
+  width: 100%;
+}
+
+.section-resource-list__header:is(:empty, :has(.group-block-content:empty)),
+.section-resource-list__content:empty {
+  display: none;
+}
+
+:where(.section-resource-list.section--full-width) product-card[data-product-transition] > .group-block,
+:where(.section-carousel.section--full-width) product-card[data-product-transition] > .group-block {
+  @media screen and (max-width: 749px) {
+    padding-inline: max(var(--padding-xs), var(--padding-inline-start))
+      max(var(--padding-xs), var(--padding-inline-end));
+  }
+}
+
+/* Base styles */
+.group-block,
+.group-block-content {
+  position: relative;
+}
+
+.group-block:has(> video-background-component) {
+  overflow: hidden;
+}
+
+.group-block-content {
+  height: 100%;
+  width: 100%;
+}
+
+/* Container styles */
+.section-content-wrapper.section-content-wrapper:where(.layout-panel-flex) .group-block--fill {
+  flex: 1;
+}
+
+/* Flex behavior for width variants */
+.layout-panel-flex--row > .group-block--width-fit {
+  flex: 0;
+}
+
+.layout-panel-flex--row > .group-block--width-fill {
+  flex: 1;
+}
+
+.layout-panel-flex--row > .group-block--width-custom {
+  flex-basis: var(--size-style-width);
+}
+
+/* Dimension utilities - Height */
+.group-block--height-fit {
+  height: auto;
+}
+
+.group-block--height-custom,
+.group-block--height-fill {
+  height: var(--size-style-height);
+}
+
+/* Flex behavior for height variants */
+.layout-panel-flex--column > .group-block--height-fit {
+  flex: 0 1 auto;
+}
+
+.layout-panel-flex--column > .group-block--height-fill {
+  flex: 1;
+}
+
+.layout-panel-flex--column > .group-block--height-custom {
+  flex-basis: var(--size-style-height);
+}
+
+/* Global scrollbar styles */
+
+/* Webkit browsers */
+::-webkit-scrollbar {
+  width: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--color-foreground-rgb) / var(--opacity-40));
+  border-radius: 20px;
+  border: 6px solid transparent;
+  background-clip: content-box;
+  transition: background-color 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--color-foreground-rgb) / var(--opacity-60));
+}
+
+/* Prevent iOS zoom on input focus by ensuring minimum 16px font size on mobile */
+@media screen and (max-width: 1200px) {
+  input,
+  textarea,
+  select,
+  /* Higher specificity to override type preset classes like .paragraph, .h1, etc. */
+  .paragraph.paragraph input,
+  .paragraph.paragraph textarea,
+  .paragraph.paragraph select,
+  .h1.h1 input,
+  .h1.h1 textarea,
+  .h1.h1 select,
+  .h2.h2 input,
+  .h2.h2 textarea,
+  .h2.h2 select,
+  .h3.h3 input,
+  .h3.h3 textarea,
+  .h3.h3 select,
+  .h4.h4 input,
+  .h4.h4 textarea,
+  .h4.h4 select,
+  .h5.h5 input,
+  .h5.h5 textarea,
+  .h5.h5 select,
+  .h6.h6 input,
+  .h6.h6 textarea,
+  .h6.h6 select {
+    font-size: max(1rem, 100%);
+  }
+}
+
+/* When the header is transparent, and when there is no header-section below it, offset the first main-section with
+ * the height of the header
+ */
+main > .shopify-section:first-child .section:not(.disable-section-top-offset) {
+  &.spacing-style,
+  .spacing-style {
+    --section-top-offset: calc(var(--header-height) * var(--transparent-header-offset-boolean));
+
+    /* Any nested sections should not be offset */
+    .spacing-style {
+      --section-top-offset: 0px;
+    }
+  }
+
+  /* Make sticky content immediately stick to the top of the page */
+  .sticky-content {
+    margin-top: calc(var(--header-height) * var(--transparent-header-offset-boolean) * -1);
+  }
+}
+
+/* OZRAN editorial image polish on the homepage */
+.hero__media { object-fit: cover; object-position: center; }
+.collection-card img, .product-card img { object-fit: cover; transition: transform .55s cubic-bezier(.2,.7,.2,1); }
+@media (hover:hover) and (prefers-reduced-motion:no-preference) {
+  .collection-card:hover img, .product-card:hover img { transform: scale(1.025); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .collection-card img, .product-card img { transition: none; }
+}
+
+/* OZRAN homepage campaign: keep both silhouettes visible on narrow screens */
+@media screen and (max-width: 749px) {
+  body.template-index .hero__media-grid { background: #151310; }
+  body.template-index .hero__media { object-fit: contain; object-position: center center; }
+}
+
+/* OZRAN — premium product and collection framing, draft only */
+.product-card .product-card__content,
+.collection-card {
+  border-radius: 2px;
+}
+.product-card .product-card__content :is(.product-media, .product-card__media, .card-gallery),
+.collection-card :is(.collection-card__image, .collection-card__media) {
+  overflow: hidden;
+  background-color: #eeeae4;
+  border: 1px solid rgba(24, 22, 20, .10);
+}
+.product-card :is(.product-media img, .card-gallery img, .product-card__media img),
+.collection-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  image-rendering: auto;
+  filter: contrast(1.035) saturate(.94);
+  backface-visibility: hidden;
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .product-card:hover :is(.product-media img, .card-gallery img, .product-card__media img),
+  .collection-card:hover img {
+    transform: scale(1.018);
+  }
+}
+
+/* OZRAN — collection editorial polish, non-published theme */
+.collection-card :is(img, picture img) {
+  object-position: center 32%;
+  filter: contrast(1.045) saturate(.90);
+}
+.collection-card :is(.collection-card__image, .collection-card__media) {
+  background: #eae6df;
+  border-radius: 1px;
+}
+@media (min-width: 750px) {
+  .collection-card img { transition: transform .55s ease, filter .35s ease; }
+}
+@media (max-width: 749px) {
+  .collection-card img { object-position: center 26%; }
+}
+/* OZRAN cap — full-frame image, natural scale, precise positioning */
+.product-card:has(a[href*="casquette-ozran"]) img,
+product-card:has(a[href*="casquette-ozran"]) img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center 42% !important;
+  transform: none !important;
+  filter: contrast(1.035) saturate(.96);
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .product-card:has(a[href*="casquette-ozran"]):hover img,
+  product-card:has(a[href*="casquette-ozran"]):hover img { transform: scale(1.015) !important; }
+}
+
+/* OZRAN collection photography: clean, detailed rendering without false upscaling */
+.collection-card img, .collection-card picture img {
+  filter: contrast(1.055) brightness(1.015) saturate(.98);
+  object-fit: cover;
+  image-rendering: auto;
+}
+.collection-card :is(.collection-card__image,.collection-card__media) { isolation: isolate; }
+@media (prefers-reduced-motion: reduce) { .collection-card img { transition: none !important; } }
+
+/* OZRAN — refined luxury streetwear navigation */
+#header-group .header-section {
+  border-bottom: 1px solid rgba(255,255,255,.11);
+}
+#header-group .header-section .header {
+  transition: background-color .25s ease, border-color .25s ease;
+}
+#header-group .header-menu a,
+#header-group .menu-list__link,
+#header-group .header__menu-item {
+  text-decoration: none;
+  letter-spacing: .105em;
+  font-weight: 500;
+  transition: opacity .2s ease;
+}
+@media (hover:hover) {
+  #header-group .header-menu a:hover,
+  #header-group .menu-list__link:hover,
+  #header-group .header__menu-item:hover { opacity: .72; }
+}
+#header-group a:focus-visible,
+#header-group button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) {
+  #header-group .header-section .header,
+  #header-group .header-menu a,
+  #header-group .menu-list__link { transition: none; }
+}
+
+/* OZRAN — refined variant selectors on product detail pages */
+variant-picker fieldset,
+variant-picker .variant-option,
+.variant-picker fieldset { border-color: rgba(20,20,20,.14); }
+variant-picker label,
+.variant-picker label { letter-spacing: .045em; }
+variant-picker input[type="radio"] + label,
+.variant-picker input[type="radio"] + label {
+  min-width: 42px;
+  min-height: 42px;
+  border-radius: 2px;
+  transition: border-color .18s ease, background-color .18s ease;
+}
+variant-picker input[type="radio"]:focus-visible + label,
+.variant-picker input[type="radio"]:focus-visible + label { outline: 2px solid currentColor; outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  variant-picker input[type="radio"] + label,
+  .variant-picker input[type="radio"] + label { transition: none; }
+}
+
+/* OZRAN — product detail editorial refinement, draft theme */
+.template-product .product-information {
+  --ozran-detail-ink: #191919;
+}
+.template-product .product-information .product-media img {
+  image-rendering: auto;
+  object-position: center center;
+}
+.template-product .product-information .product-details,
+.template-product .product-information .product-details__inner {
+  row-gap: clamp(16px, 2vw, 26px);
+}
+.template-product .product-information h1 {
+  font-weight: 500;
+  letter-spacing: .045em;
+  line-height: 1.18;
+  text-wrap: balance;
+}
+.template-product .product-information .product-price,
+.template-product .product-information [data-testid="price"] {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .025em;
+}
+.template-product .product-information .rte {
+  line-height: 1.7;
+}
+.template-product .product-information button[type="submit"] {
+  min-height: 48px;
+  transition: opacity .2s ease;
+}
+@media (hover: hover) {
+  .template-product .product-information button[type="submit"]:not(:disabled):hover { opacity: .85; }
+}
+@media (max-width: 749px) {
+  .template-product .product-information h1 { font-size: clamp(23px, 6vw, 30px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .template-product .product-information button[type="submit"] { transition: none; }
+}
+
+/* OZRAN collection pages — refined editorial layout */
+body:has(.collection-card) .collection-card img { image-rendering:auto; }
+@media (min-width:750px) {
+  .section-resource-list .product-card { transition: transform .28s ease; }
+}
+.facets__form, .facets__wrapper { letter-spacing: .045em; }
+@media(max-width:749px) {
+  .facets__form, .facets__wrapper { letter-spacing: .025em; }
+}
+
+/* OZRAN — premium cart presentation, no commerce logic changes */
+.cart-page__title { text-align:center; letter-spacing:.12em; font-weight:500; }
+.cart-page__items img, .cart-drawer__items img {
+  object-fit:cover;
+  object-position:center;
+  image-rendering:auto;
+}
+.cart-page__summary { border-radius:2px; }
+.cart-page__items a, .cart-drawer__items a { text-decoration:none; }
+.cart-page__items a:hover, .cart-drawer__items a:hover { text-decoration:none; opacity:.84; }
+.cart-page__summary button, .cart-drawer__summary button { min-height:46px; }
+.theme-drawer__header { letter-spacing:.08em; }
+.cart-drawer__content { --ozran-cart-spacing:20px; }
+@media(max-width:749px) {
+ .cart-page__title { letter-spacing:.08em; }
+ .cart-page__summary { margin-top:20px; }
+}
+
+/* OZRAN — mobile homepage editorial layout */
+@media screen and (max-width: 749px) {
+  /* Banner: retain the whole campaign artwork without stretching */
+  .shopify-section:has(.hero__media-grid) .hero__content-wrapper {
+    padding-inline: 18px;
+  }
+  .shopify-section:has(.hero__media-grid) .hero__content-wrapper h1,
+  .shopify-section:has(.hero__media-grid) .hero__content-wrapper h2 {
+    font-size: clamp(25px, 7vw, 37px);
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+  .shopify-section:has(.hero__media-grid) .hero__media {
+    object-fit: cover;
+    object-position: center 38%;
+  }
+  /* Collection cards: keep each category legible on two columns */
+  .collection-card { min-width: 0; }
+  .collection-card img { object-fit: cover; object-position: center 30%; }
+  /* Controls, product imagery and long names */
+  .ozran-duo__item { min-width: 0; }
+  .ozran-duo__media { aspect-ratio: 4 / 5; }
+  .ozran-duo__title { line-height: 1.45; overflow-wrap: break-word; }
+  .ozran-duo__price { padding-top: 3px; }
+  .ozran-newsletter__inner { width: 100%; }
+  .ozran-newsletter__input { font-size: 16px; }
+  .ozran-newsletter__button { min-height: 48px; }
+}
+@media screen and (max-width: 390px) {
+  .ozran-duo__grid { gap: 9px; }
+  .ozran-duo__title { font-size: 12px; }
+  .ozran-duo__media { aspect-ratio: 3 / 4; }
+}
+
+/* OZRAN — mobile hero photo framing correction */
+@media screen and (max-width: 749px) {
+  body.template-index .hero__media-grid { background: #151310; }
+  body.template-index .hero__media,
+  .shopify-section:has(.hero__media-grid) .hero__media {
+    object-fit: cover;
+    object-position: center 38%;
+  }
+}
+
+
+/* OZRAN SIGNATURE / Homepage motion system — scoped, composited, accessible */
+@media (prefers-reduced-motion: no-preference) {
+  /* Make the campaign immediately visible, animate text only. */
+  body.template-index #MainContent .hero__content-wrapper .text-block {
+    animation: ozran-signature-enter .68s cubic-bezier(.19,1,.22,1) both;
+  }
+  body.template-index #MainContent .hero__content-wrapper .text-block:nth-of-type(2) {
+    animation-delay: .10s;
+  }
+  body.template-index #MainContent .hero__content-wrapper .button {
+    animation: ozran-signature-enter .65s cubic-bezier(.19,1,.22,1) .18s both;
+  }
+  @keyframes ozran-signature-enter {
+    from { opacity:0; transform:translate3d(0,13px,0); }
+    to { opacity:1; transform:translate3d(0,0,0); }
+  }
+  /* Product imagery remains stationary on touch devices. */
+  @media (hover:hover) and (pointer:fine) {
+    body.template-index #MainContent .product-card img {
+      transition: transform .52s cubic-bezier(.2,.7,.2,1), opacity .35s ease;
+    }
+    body.template-index #MainContent .product-card:hover img {
+      transform:scale(1.025);
+    }
+  }
+}
+/* Navigation: understated editorial underline, no layout shift. */
+@media (hover:hover) and (pointer:fine) {
+  body.template-index .header a[href],
+  body.template-index .header-menu a[href] {
+    text-decoration:none;
+    text-underline-offset:6px;
+    transition:opacity .24s ease, text-decoration-color .24s ease;
+  }
+  body.template-index .header a[href]:hover,
+  body.template-index .header-menu a[href]:hover {
+    text-decoration:underline;
+    text-decoration-thickness:1px;
+    text-underline-offset:6px;
+  }
+}
+/* Editorial rules: animate divider tone, never force the page to reflow. */
+body.template-index #MainContent hr,
+body.template-index #MainContent .divider {
+  opacity:.65;
+  transition: opacity .3s ease;
+}
+body.template-index #MainContent .button,
+body.template-index #MainContent a.button {
+  transition:background-color .24s ease,color .24s ease,border-color .24s ease,opacity .24s ease;
+}
+@media (prefers-reduced-motion:reduce) {
+  body.template-index #MainContent .hero__content-wrapper .text-block,
+  body.template-index #MainContent .hero__content-wrapper .button {
+    animation:none!important;
+  }
+  body.template-index #MainContent .product-card img,
+  body.template-index #MainContent .button,
+  body.template-index .header a[href],
+  body.template-index .header-menu a[href] {transition:none!important}
+}
+
+
+
+/* OZRAN THE SIGNATURE — product detail editorial layout, draft theme */
+body.template-product #MainContent .product-information{--ozran-ink:#141414;--ozran-soft:#ebe6dd}
+@media(min-width:750px){
+ body.template-product #MainContent .product-information{column-gap:clamp(24px,4vw,64px)}
+ body.template-product #MainContent .product-information .product-media-gallery{min-width:0}
+}
+body.template-product #MainContent .product-information .product-media-gallery,
+body.template-product #MainContent .product-information .product-details{
+ border-radius:4px;
+}
+body.template-product #MainContent .product-information .product-details{
+ border:1px solid color-mix(in srgb,currentColor 22%,transparent);
+ padding:clamp(22px,3vw,42px);
+}
+body.template-product #MainContent .product-information .product-details h1{
+ font-family:'GFS Didot',Georgia,serif!important;font-weight:400!important;
+ font-size:clamp(30px,3.6vw,56px)!important;letter-spacing:.025em;line-height:1.12;
+}
+body.template-product #MainContent .product-information .variant-picker,
+body.template-product #MainContent .product-information variant-picker{margin-block:6px}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button{
+ width:100%;min-height:67px!important;border:1px solid #8e8073!important;
+ border-radius:40px!important;background:transparent!important;color:inherit!important;
+ letter-spacing:.14em;font-size:0!important;display:flex!important;align-items:center;justify-content:center;
+ padding:12px 78px 12px 16px!important;box-shadow:inset 0 0 0 1px #ffffff0a;
+ transition:background .28s ease,border-color .28s ease,box-shadow .28s ease;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:not(:disabled):hover{
+ background:#a8a09316!important;border-color:#c8baaa!important;box-shadow:0 0 18px #bea98c20;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:not(:disabled)::before{
+ content:"FAIS PARTIE DE L’HISTOIRE";font:500 clamp(10px,1vw,13px)/1.35 var(--font-body--family,Arial,sans-serif);
+ letter-spacing:.15em;color:inherit;text-align:center;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button[data-added="true"]::before{
+ content:"BIENVENUE DANS L’HISTOIRE";
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after{
+ content:"";position:absolute;right:9px;top:50%;transform:translateY(-50%);width:49px;height:49px;
+ border:1px solid #c3b6a099;border-radius:50%;
+ background-image:url("https://cdn.shopify.com/s/files/1/1117/7295/9059/files/ozran-official-brand-mark-reference.png?v=1793308448");
+ background-size:335% auto;background-position:50% 26%;background-repeat:no-repeat;
+ box-shadow:0 0 11px #d0b89a22;transition:transform .28s ease,box-shadow .28s ease;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:hover::after{transform:translateY(-50%) scale(1.055);box-shadow:0 0 20px #d0b89a45}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button .add-to-cart-icon,
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button .add-to-cart__added{
+ display:none!important;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:disabled::before{
+ content:"INDISPONIBLE";opacity:.6;
+}
+@media(max-width:749px){
+ body.template-product #MainContent .product-information .product-details{padding:20px 14px}
+ body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button{min-height:62px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button,
+ body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after{transition:none!important}
+}
+
+/* OZRAN SIGNATURE V3 — confirmation visible only on Shopify successful add state */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button[data-added="true"]::before{
+ color:var(--color-foreground,#eae6df)!important;opacity:1!important;
+ animation:ozran-signature-message .52s cubic-bezier(.2,.8,.2,1) both;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button[data-added="true"]::after{
+ animation:ozran-signature-seal .68s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes ozran-signature-message{
+ from{opacity:0;transform:translateY(9px);filter:blur(3px)}
+ to{opacity:1;transform:translateY(0);filter:blur(0)}
+}
+@keyframes ozran-signature-seal{
+ 0%{transform:translateY(-50%) scale(.83) rotate(-16deg);box-shadow:0 0 0 #d0b89a00}
+ 70%{transform:translateY(-50%) scale(1.1) rotate(7deg);box-shadow:0 0 19px #d0b89a88}
+ 100%{transform:translateY(-50%) scale(1) rotate(0deg);box-shadow:0 0 11px #d0b89a33}
+}
+@media(prefers-reduced-motion:reduce){
+ body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button[data-added="true"]::before,
+ body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button[data-added="true"]::after{animation:none!important}
+}
+
+/* OZRAN responsive product geometry and quick-shop reveal V4 */
+@media(min-width:900px){
+ body.template-product #MainContent .product-information{max-width:1440px;margin-inline:auto;padding-inline:clamp(16px,3vw,48px)}
+ body.template-product #MainContent .product-information .product-details{padding:clamp(20px,2.5vw,32px);min-width:0}
+}
+body.template-product #MainContent .product-information .product-media-gallery img{object-fit:contain}
+body:is(.template-index,.template-collection) product-card .ozran-quick-panel{display:none}
+.ozran-quick-panel.ozran-panel-floating{
+ position:fixed!important;inset:auto;display:flex!important;flex-direction:column;gap:12px;
+ z-index:2147480000;box-sizing:border-box;border:1px solid #655c50;border-radius:5px;
+ background:#171717;color:#ece7de;padding:20px;box-shadow:0 14px 45px #0008;
+ overflow-y:auto;overscroll-behavior:contain;
+ opacity:1;visibility:visible;transform:none;
+ font-family:var(--font-body--family,Arial,sans-serif);pointer-events:auto;
+}
+.ozran-quick-panel__top{display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.17em;color:#bbb1a3}
+.ozran-quick-panel__close{background:transparent;border:0;color:#ddd;font-size:22px;cursor:pointer}
+.ozran-quick-panel__title{font:400 clamp(19px,1.5vw,28px)/1.13 'GFS Didot',Georgia,serif!important;margin:0}
+.ozran-quick-panel__price{font-size:14px}
+.ozran-quick-panel__description{font-size:12px;line-height:1.65;max-height:100px;overflow:auto;color:#c2bbb1}
+.ozran-quick-panel__options{margin:0;padding:0;border:0}
+.ozran-quick-panel__options legend{margin-bottom:7px;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.ozran-quick-panel__choices{display:flex;flex-wrap:wrap;gap:7px}
+.ozran-quick-panel__choices label{position:relative;cursor:pointer}
+.ozran-quick-panel__choices input{position:absolute;opacity:0;width:1px;height:1px}
+.ozran-quick-panel__choices span{display:block;padding:7px 11px;border:1px solid #5b554e;font-size:11px;min-width:32px;text-align:center;border-radius:2px}
+.ozran-quick-panel__choices input:checked+span{border-color:#e8dfd2;background:#eee4d214}
+.ozran-quick-panel__choices input:focus-visible+span{outline:2px solid white;outline-offset:2px}
+.ozran-quick-panel__status{min-height:13px;font-size:11px;color:#d6b9aa}
+.ozran-quick-panel__buy{position:relative;min-height:55px;border:1px solid #9d8b75;border-radius:32px;background:transparent;color:#f2eee8;padding:9px 55px 9px 15px;cursor:pointer;letter-spacing:.12em;font:500 10px/1.25 var(--font-body--family,Arial,sans-serif)}
+.ozran-quick-panel__seal{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;border:1px solid #b5a58c;background:url("https://cdn.shopify.com/s/files/1/1117/7295/9059/files/ozran-official-brand-mark-reference.png?v=1793308448") center 26%/335% auto no-repeat}
+.ozran-quick-panel__buy[data-added="true"] .ozran-quick-panel__seal{animation:ozran-signature-seal .68s ease both}
+.ozran-quick-panel__detail{align-self:center;color:#cfc4b6;text-decoration:none;font-size:10px;letter-spacing:.13em}
+@media(max-width:749px){
+ .ozran-quick-panel.ozran-panel-floating{width:calc(100vw - 24px)!important;left:12px!important;top:auto!important;bottom:12px!important;max-height:76dvh!important}
+}
+@media(prefers-reduced-motion:reduce){.ozran-quick-panel__seal{animation:none!important}}
+
+/* OZRAN seal fine adjustment — slightly smaller, optically centered */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after{
+ width:45px;height:45px;right:11px;
+ background-size:305% auto;background-position:50% 29%;
+}
+.ozran-quick-panel__seal{
+ width:38px;height:38px;right:8px;
+ background-size:305% auto;background-position:50% 29%;
+}
+
+/* OZRAN seal refinement V5 — flat black ground, smaller symbol */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after{
+ background-color:#000!important;
+ background-size:260% auto!important;
+ background-position:50% 29%!important;
+ width:43px;height:43px;right:12px;
+}
+.ozran-quick-panel__seal{
+ background-color:#000!important;
+ background-size:260% auto!important;
+ background-position:50% 29%!important;
+ width:37px;height:37px;right:9px;
+}
+
+/* OZRAN official white-on-black seal — fully visible and centered */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after,
+.ozran-quick-panel__seal{
+ background-color:#000!important;
+ background-image:url("https://cdn.shopify.com/s/files/1/1117/7295/9059/files/ozran-logo-white-black-signature.png?v=1793309153")!important;
+ background-position:center center!important;
+ background-size:92% 92%!important;
+ background-repeat:no-repeat!important;
+}
+
+/* OZRAN CTA text restored as real DOM content, independent of pseudo-elements */
+body.template-product #MainContent add-to-cart-component .add-to-cart-button::before{content:none!important}
+body.template-product #MainContent add-to-cart-component .add-to-cart-button .ozran-atc-label{
+ display:block!important;position:relative;z-index:2;flex:1;text-align:center;
+ color:var(--color-foreground,#eee9e1)!important;font:500 clamp(10px,1vw,13px)/1.35 var(--font-body--family,Arial,sans-serif)!important;
+ letter-spacing:.12em!important;white-space:normal;
+}
+body.template-product #MainContent add-to-cart-component .add-to-cart-button .ozran-atc-label--added{display:none!important}
+body.template-product #MainContent add-to-cart-component .add-to-cart-button[data-added="true"] .ozran-atc-label--initial{display:none!important}
+body.template-product #MainContent add-to-cart-component .add-to-cart-button[data-added="true"] .ozran-atc-label--added{
+ display:block!important;animation:ozran-signature-message .52s ease both;
+}
+body.template-product #MainContent add-to-cart-component .add-to-cart-button:disabled .ozran-atc-label{opacity:.5}
+
+/* OZRAN CTA contrast fix: readable in enabled and unavailable states */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button{
+ opacity:1!important;filter:none!important;
+ color:#f5f2ed!important;-webkit-text-fill-color:#f5f2ed!important;
+ background:#151515!important;border-color:#a59989!important;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button .ozran-atc-label{
+ color:#f5f2ed!important;-webkit-text-fill-color:#f5f2ed!important;
+ opacity:1!important;filter:none!important;visibility:visible!important;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button::after{
+ opacity:1!important;filter:none!important;border-color:#c1b6a7!important;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:disabled{
+ opacity:1!important;cursor:not-allowed!important;border-color:#756d63!important;
+ background:#222!important;
+}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:disabled .ozran-atc-label--initial{display:none!important}
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button:disabled::before{
+ content:"INDISPONIBLE"!important;display:block!important;
+ font:500 12px/1.3 var(--font-body--family,Arial,sans-serif)!important;
+ color:#e2dacf!important;-webkit-text-fill-color:#e2dacf!important;
+ opacity:1!important;letter-spacing:.14em;text-align:center;flex:1;
+}
+
+/* OZRAN SIGNATURE / coordinated product option controls */
+body.template-product #MainContent .product-information variant-picker .variant-picker__form{display:flex;flex-direction:column;gap:18px}
+body.template-product #MainContent .product-information variant-picker .variant-option{min-width:0}
+body.template-product #MainContent .product-information variant-picker .variant-option legend,
+body.template-product #MainContent .product-information .quantity-label{
+ color:inherit!important;opacity:1!important;font-size:11px!important;font-weight:500!important;
+ text-transform:uppercase;letter-spacing:.17em!important;margin-bottom:10px;
+}
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label{
+ border-radius:32px!important;overflow:visible;
+}
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label__pill,
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label__text{
+ border-radius:32px!important;
+}
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label:has(input[type="radio"]) {
+ transition:box-shadow .25s ease,transform .25s ease;
+}
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label:has(input:checked) {
+ box-shadow:0 0 0 1px #d7c9b6;
+}
+body.template-product #MainContent .product-information variant-picker .variant-option__button-label:has(input:focus-visible) {
+ outline:2px solid #d7c9b6;outline-offset:3px;
+}
+body.template-product #MainContent .product-information .quantity-selector-wrapper{
+ width:max-content;max-width:100%;
+}
+body.template-product #MainContent .product-information .quantity-selector{
+ min-height:46px!important;border:1px solid #a59989!important;border-radius:28px!important;
+ background:#171717!important;color:#f5f2ed!important;overflow:hidden;
+ display:inline-flex!important;align-items:center;
+}
+body.template-product #MainContent .product-information .quantity-selector input{
+ background:transparent!important;color:#f5f2ed!important;-webkit-text-fill-color:#f5f2ed!important;
+ border:0!important;text-align:center;min-width:40px;max-width:60px;
+ opacity:1!important;
+}
+body.template-product #MainContent .product-information .quantity-selector button{
+ background:transparent!important;color:#f5f2ed!important;min-width:43px;min-height:43px;
+ border:0!important;border-radius:50%!important;opacity:1!important;
+}
+body.template-product #MainContent .product-information .quantity-selector button:hover:not(:disabled){
+ background:#3b352e!important;
+}
+body.template-product #MainContent .product-information .quantity-selector button:disabled{opacity:.35!important}
+@media(max-width:749px){
+ body.template-product #MainContent .product-information variant-picker .variant-picker__form{gap:15px}
+}
+@media(prefers-reduced-motion:reduce){
+ body.template-product #MainContent .product-information variant-picker .variant-option__button-label{transition:none!important}
+}
+
+/* OZRAN SIGNATURE — balanced quantity and signature action on one baseline */
+@media(min-width:750px){
+ body.template-product #MainContent .product-information .product-form-buttons:has(> .quantity-selector-wrapper):has(add-to-cart-component){
+  display:grid!important;grid-template-columns:138px minmax(0,1fr);column-gap:13px;row-gap:12px;
+  align-items:center;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons > .quantity-selector-wrapper{
+  grid-column:1;grid-row:auto;width:138px!important;max-width:100%;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons > :has(> add-to-cart-component){
+  grid-column:2;min-width:0;width:100%;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons > :not(.quantity-selector-wrapper):not(:has(> add-to-cart-component)){
+  grid-column:1 / -1;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons .quantity-selector{
+  width:100%;min-height:62px!important;justify-content:space-between;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons .quantity-selector button{
+  min-width:38px;height:60px;
+ }
+ body.template-product #MainContent .product-information .product-form-buttons .quantity-selector input{width:46px}
+ body.template-product #MainContent .product-information .product-form-buttons add-to-cart-component .add-to-cart-button{
+  min-height:62px!important;margin:0;
+ }
+}
+@media(max-width:749px){
+ body.template-product #MainContent .product-information .product-form-buttons > .quantity-selector-wrapper{
+  margin-bottom:10px;
+ }
+}
+
+/* OZRAN — mobile quick-shop touch entry point */
+body:is(.template-index,.template-collection) product-card .ozran-mobile-preview{display:none}
+@media(hover:none),(max-width:749px){
+ body:is(.template-index,.template-collection) product-card{position:relative}
+ body:is(.template-index,.template-collection) product-card .ozran-mobile-preview{
+  position:absolute;z-index:15;right:10px;bottom:72px;display:inline-flex!important;
+  align-items:center;justify-content:center;gap:9px;min-height:35px;
+  border:1px solid #bdb2a5;border-radius:24px;background:#151515ee;
+  color:#f8f5ee;padding:8px 12px;font:500 10px/1.2 Arial,sans-serif;
+  letter-spacing:.13em;cursor:pointer;box-shadow:0 3px 13px #0005;
+ }
+ body:is(.template-index,.template-collection) product-card .ozran-mobile-preview:focus-visible{
+  outline:2px solid white;outline-offset:3px;
+ }
+ .ozran-quick-panel.ozran-panel-floating{
+  left:12px!important;right:12px!important;bottom:max(12px,env(safe-area-inset-bottom))!important;
+  top:auto!important;width:calc(100vw - 24px)!important;max-height:76dvh!important;
+ }
+}
+
+/* Mobile editorial reveal V5: automatic, without any visible preview button */
+body:is(.template-index,.template-collection) product-card .ozran-mobile-preview{display:none!important}
+@media(hover:none){
+ .ozran-quick-panel.ozran-panel-floating{
+  max-height:min(58dvh,490px)!important;bottom:max(10px,env(safe-area-inset-bottom))!important;
+  border-radius:12px!important;
+  animation:ozran-panel-rise .35s cubic-bezier(.2,.8,.2,1) both;
+ }
+}
+@keyframes ozran-panel-rise{from{opacity:0;translate:0 18px}to{opacity:1;translate:0 0}}
+@media(prefers-reduced-motion:reduce){.ozran-quick-panel.ozran-panel-floating{animation:none!important}}
+
+/* OZRAN mobile compact editorial drawer V6 — unobtrusive quick shop */
+@media(max-width:749px),(hover:none){
+ .ozran-quick-panel.ozran-panel-floating{
+  position:fixed!important;left:10px!important;right:10px!important;
+  bottom:max(10px,env(safe-area-inset-bottom))!important;top:auto!important;
+  width:calc(100vw - 20px)!important;max-width:460px!important;
+  margin-inline:auto!important;max-height:min(43dvh,340px)!important;
+  padding:15px 17px 14px!important;gap:8px!important;
+  border-radius:17px!important;border:1px solid #73685b!important;
+  background:#151515f5!important;box-shadow:0 8px 35px #0008!important;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  animation:ozran-panel-rise .32s cubic-bezier(.2,.8,.2,1) both;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__top{font-size:9px;line-height:1.2}
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__title{
+  font-size:20px!important;line-height:1.14!important;max-width:96%;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__price{font-size:13px}
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__description{
+  font-size:11px;line-height:1.5;max-height:40px;overflow-y:auto;
+  color:#bfb6aa;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__choices{gap:5px}
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__choices span{
+  padding:6px 9px;font-size:10px;border-radius:13px;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__options legend{
+  font-size:9px;margin-bottom:4px;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__buy{
+  min-height:46px;border-radius:27px;font-size:9px;padding-right:54px;flex-shrink:0;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__seal{
+  width:34px;height:34px;right:6px;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__detail{font-size:9px}
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__status{min-height:0}
+ .ozran-quick-panel.ozran-panel-floating:focus-within{max-height:min(58dvh,465px)!important}
+}
+
+/* OZRAN mobile floating card placement */
+@media(max-width:749px),(hover:none){
+ .ozran-quick-panel.ozran-panel-floating{
+  bottom:calc(max(18px,env(safe-area-inset-bottom)) + 16px)!important;
+  left:16px!important;right:16px!important;
+  width:calc(100vw - 32px)!important;max-width:420px!important;
+  max-height:min(42dvh,332px)!important;
+  margin-inline:auto!important;border-radius:12px!important;
+  border:1px solid #8d817048!important;
+  box-shadow:0 10px 35px #0009,0 0 0 1px #ffffff08!important;
+  background:#161616f8!important;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__top{
+  border-bottom:1px solid #ffffff20;padding-bottom:8px;
+ }
+}
+/* OZRAN / final mobile Quick Shop typographic alignment */
+@media(max-width:749px),(hover:none){
+ .ozran-quick-panel.ozran-panel-floating{
+  text-align:left!important;
+  align-items:stretch!important;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__top{
+  width:100%;align-items:center!important;gap:12px;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__close{
+  flex:0 0 auto;line-height:1;width:28px;height:28px;display:grid;place-items:center;
+  padding:0!important;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__title{
+  margin:0!important;max-width:100%!important;text-align:left!important;
+  overflow-wrap:break-word;hyphens:auto;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__price{
+  text-align:left!important;font-variant-numeric:tabular-nums;line-height:1.35;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__description{
+  text-align:left!important;overflow-wrap:break-word;hyphens:auto;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__options{
+  width:100%;min-width:0;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__options legend{
+  padding:0!important;text-align:left!important;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__choices{
+  align-items:center;justify-content:flex-start;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__buy{
+  width:100%!important;display:flex;align-items:center;justify-content:center;
+  position:relative;text-align:center!important;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__buytext{
+  display:block;flex:1;max-width:100%;padding-inline:5px;
+  text-align:center!important;line-height:1.35;overflow-wrap:normal;
+ }
+ .ozran-quick-panel.ozran-panel-floating .ozran-quick-panel__detail{
+  align-self:center!important;text-align:center!important;
+ }
+}
+
+.ozran-home-gallery{display:flex;width:100%;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;touch-action:pan-x pan-y pinch-zoom;overscroll-behavior-x:contain}
+.ozran-home-gallery::-webkit-scrollbar{display:none}
+.ozran-home-gallery__slide{flex:0 0 100%;width:100%;height:100%;scroll-snap-align:start;min-width:0}
+.ozran-home-gallery__slide img{display:block;width:100%;height:100%;object-fit:cover;transform:none!important}
+.ozran-home-gallery:focus-visible{outline:2px solid currentColor;outline-offset:-3px}
+.ozran-duo__media{position:relative}
+.ozran-duo__media>.ozran-home-gallery,.ozran-001-item>.ozran-home-gallery{position:absolute;inset:0}
+
+/* OZRAN — CTAs produits plus courts et centrés, mobile et ordinateur */
+body.template-product #MainContent .product-information add-to-cart-component .add-to-cart-button {
+  width: min(100%, 260px) !important;
+  max-width: 260px !important;
+  margin-inline: auto !important;
+  display: flex;
+  justify-content: center;
+}
+body.template-product #MainContent .oz-pair__action {
+  width: min(100%, 240px) !important;
+  max-width: 240px !important;
+  flex: 0 1 240px;
+  text-align: center;
+}
+body.template-product #MainContent .oz-pair__footer {
+  align-items: center;
+  gap: 16px;
+}
+body.template-product #MainContent .oz-pair__footer:has(.oz-pair__total) {
+  justify-content: space-between;
+}
+@media (max-width: 749px) {
+  body.template-product #MainContent .oz-pair__footer:has(.oz-pair__total) .oz-pair__action {
+    flex: 0 1 220px;
+    max-width: 220px !important;
+    padding-inline: 12px;
+  }
+  body.template-product #MainContent .oz-pair__footer:not(:has(.oz-pair__total)) {
+    justify-content: center;
+  }
+}
+
+/* OZRAN — bouton compact dans « Pensés pour aller ensemble » */
+body.template-product #MainContent .oz-pair__footer .oz-pair__action[data-pair-add] {
+  width: min(100%, 210px) !important;
+  max-width: 210px !important;
+  flex: 0 0 auto !important;
+  padding-inline: 16px !important;
+  margin-inline: auto !important;
+}
+body.template-product #MainContent .oz-pair__footer .oz-pair__action[data-pair-add] .oz-pair__action-main {
+  justify-content: center;
+  gap: 12px;
+}
+
+/* OZRAN mobile: quantity + purchase action in one bottom dock, native product form. */
+@media screen and (max-width:749px) {
+  body.template-product #MainContent .product-information .product-form-buttons > .quantity-selector-wrapper {
+    position:fixed!important;
+    left:12px!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+    width:116px!important;
+    max-width:116px!important;
+    height:56px!important;
+    margin:0!important;
+    z-index:10002!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons > .quantity-selector-wrapper .quantity-selector {
+    display:flex!important;
+    width:100%!important;
+    height:56px!important;
+    min-height:56px!important;
+    border-radius:12px!important;
+    background:#171717!important;
+    border:1px solid #a59989!important;
+    color:#f5f2ed!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons .quantity-selector button {
+    width:34px!important;
+    min-width:34px!important;
+    height:52px!important;
+    min-height:52px!important;
+    padding:0!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons .quantity-selector input {
+    width:34px!important;
+    min-width:0!important;
+    padding:0!important;
+    text-align:center!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons add-to-cart-component .add-to-cart-button {
+    position:fixed!important;
+    left:140px!important;
+    right:12px!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+    width:calc(100vw - 152px)!important;
+    max-width:none!important;
+    min-height:56px!important;
+    margin:0!important;
+    z-index:10001!important;
+    border-radius:12px!important;
+    box-shadow:0 7px 24px #0004!important;
+  }
+  body.template-product sticky-add-to-cart {display:none!important}
+  body.template-product #MainContent {padding-bottom:calc(92px + env(safe-area-inset-bottom))!important}
+}
+
+
+/* OZRAN — sitewide alignment pass 2026-11-20 */
+/* Keep adjacent collection cards on a shared visual axis without changing their links. */
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) {
+  min-width:0;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) > product-card {
+  min-width:0;
+  width:100%;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content {
+  min-width:0;
+  width:100%;
+  align-items:stretch;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content > :is(.group-block, .product-card__details) {
+  min-width:0;
+  width:100%;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content [ref="productTitleLink"] {
+  display:block;
+  width:100%;
+  min-width:0;
+  text-decoration:none;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content [ref="productTitleLink"] :is(.text-block,[role="heading"]) {
+  width:100%;
+  text-align:center!important;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content product-price {
+  width:100%;
+  text-align:center!important;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content :is(.card-gallery,.product-card__media) {
+  min-width:0;
+  width:100%;
+}
+body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content .card-gallery img {
+  display:block;
+  max-width:100%;
+}
+@media screen and (max-width:749px) {
+  body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content [ref="productTitleLink"] [role="heading"] {
+    min-height:2.8em;
+    line-height:1.4;
+    -webkit-line-clamp:2;
+    text-align:center!important;
+  }
+  body:is(.template-collection,.template-search,.template-index) :is(.product-grid__item,.resource-list__item) .product-card__content product-price {
+    min-height:1.5em;
+    line-height:1.5;
+    text-align:center!important;
+  }
+  /* Equal-width image cards and consistent text baselines inside the full-screen menu. */
+  .ozran-mobile-nav__products--compact {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-items:start!important;
+    width:100%;
+    max-width:310px;
+    margin-inline:auto!important;
+    column-gap:14px!important;
+    row-gap:22px!important;
+  }
+  .ozran-mobile-nav__products--compact .ozran-mobile-nav__product {
+    display:flex!important;
+    flex-direction:column;
+    min-width:0;
+    width:100%;
+    align-items:stretch;
+    text-align:center;
+  }
+  .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image {
+    display:block!important;
+    width:100%!important;
+    aspect-ratio:4/5!important;
+    overflow:hidden;
+  }
+  .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-image img {
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+    object-position:center!important;
+    margin:0!important;
+  }
+  .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-name {
+    width:100%;
+    min-height:2.9em;
+    line-height:1.45!important;
+    text-align:center;
+  }
+  .ozran-mobile-nav__products--compact .ozran-mobile-nav__product-price {
+    width:100%;
+    min-height:1.4em;
+    text-align:center;
+  }
+  /* Options and mobile dock stay aligned and clear of the iPhone home indicator. */
+  body.template-product #MainContent .product-information :is(.product-details,.product-form-buttons,.variant-picker__form) {
+    min-width:0;
+  }
+  body.template-product #MainContent .product-information .ozran-eclipse-size-fields__grid > * {
+    min-width:0;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons > .quantity-selector-wrapper {
+    left:12px!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons add-to-cart-component .add-to-cart-button {
+    right:12px!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+    white-space:normal!important;
+    text-align:center!important;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons add-to-cart-component .add-to-cart-button .ozran-atc-label {
+    font-size:clamp(9px,2.65vw,12px)!important;
+    letter-spacing:.07em!important;
+    line-height:1.3!important;
+  }
+}
+@media screen and (min-width:750px) {
+  body.template-product #MainContent .product-information .product-form-buttons {
+    min-width:0;
+  }
+  body.template-product #MainContent .product-information .product-form-buttons > :has(> add-to-cart-component) {
+    min-width:0;
+  }
+}
+
+/* OZRAN ID — customer account entrance, mobile editorial panel + desktop caption */
+@media screen and (min-width:750px) {
+  .header-actions .account-button {position:relative}
+  .header-actions .account-button .ozran-id-desktop-caption {
+    position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 2px);
+    font-size:8px;letter-spacing:.13em;line-height:1;white-space:nowrap;
+    opacity:.68;pointer-events:none;color:inherit;
+  }
+}
+@media screen and (max-width:749px) {
+  .header-actions .account-button .ozran-id-desktop-caption {display:none}
+  .ozran-mobile-nav__tab--id {letter-spacing:.11em!important}
+  .ozran-id-panel {max-width:540px;margin:0 auto;padding:12px 0 28px;color:#f3f0eb}
+  .ozran-id-panel__eyebrow {font-size:10px;letter-spacing:.22em;color:#aaa49b;font-weight:500}
+  .ozran-id-panel__heading {font-family:var(--font-heading--family,Georgia,serif);font-size:clamp(45px,14vw,76px);font-weight:400;letter-spacing:-.045em;line-height:1.08;margin:35px 0 14px}
+  .ozran-id-panel__heading em {font-style:normal;color:#aaa49b}
+  .ozran-id-panel__intro {font-size:13px;letter-spacing:.055em;line-height:1.65;color:#cac5bd;margin:0}
+  .ozran-id-panel__line {height:1px;background:linear-gradient(90deg,#d6d0c7,#55514a 45%,transparent);margin:32px 0}
+  .ozran-id-panel__primary {min-height:58px;background:#eeeae4;color:#151515;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 19px;text-decoration:none;font-size:11px;letter-spacing:.11em;font-weight:600}
+  .ozran-id-panel__primary span {font-size:22px;font-weight:400;line-height:1}
+  .ozran-id-panel__primary:focus-visible,.ozran-id-panel__item:focus-visible {outline:2px solid #fff;outline-offset:3px}
+  .ozran-id-panel__explain {font-size:12px;color:#b3ada5;line-height:1.7;margin:16px 0 38px}
+  .ozran-id-panel__links {border-top:1px solid #383632}
+  .ozran-id-panel__item {min-height:63px;border-bottom:1px solid #383632;display:grid;grid-template-columns:31px 1fr 18px;gap:8px;align-items:center;text-decoration:none;color:#e6e0d8;font-size:13px;line-height:1.45}
+  .ozran-id-panel__item:not(a) {color:#beb7ae}
+  .ozran-id-panel__index {font-size:10px;letter-spacing:.08em;color:#9f978d}
+  .ozran-id-panel__item > span:last-child {justify-self:end}
+  .ozran-id-panel__foot {margin-top:45px;color:#8e8880;font-size:10px;letter-spacing:.19em}
+}
